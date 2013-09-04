@@ -43,7 +43,7 @@
 #include <fstream>
 #include <iostream>
 
-double mass_l =  7.0;
+double mass_l =  8.0;
 double mass_h = 14.0;
 double binw   = 0.1;    //bin width of the histogram
 
@@ -191,6 +191,20 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
 			    muonEtaCut_min,muonEtaCut_max,dimuPtMin,dimuPtMax,doTrkRot,doConstrainFit,fixFSR,fixSigma1,useRef)); // output file names 
       
     } 
+  // if(choseSample==7)
+  //   {
+  //     mass_l =  8.0;
+  //     mass_h = 13.0;
+  //     TString figName_(Form("%s_%s_cent%d%d_bkgModel%d_muonEta%.2f%.2f_dimuPt%.2f%.2f_trkRot%d_constrain%d_%d_%d_ref%d_mass8-13",
+  // 			    outFilePrefix,choseSampleCase,centMin,centMax,bkgdModel,
+  // 			    muonEtaMin,muonEtaMax,dimuPtMin,dimuPtMax,doTrkRot,doConstrainFit,fixFSR,fixSigma1,useRef)); // output file names 
+      
+  //     //dimupT%.1f%.1f_
+  //     //upsPtCutMin,upsPtCutMax
+  //     //double upsPtCutMin   = 0, //for ups_pT bins
+  //     //double upsPtCutMax   = 150, //for ups_pT bins
+  //     //latex1.DrawLatex(0.15,1.-0.05*5.5,Form("p_{T}^{#Upsilon} > %1.f",upsPt));
+  //   } 
   figName_.ReplaceAll("-","M");
   figName_.ReplaceAll(".","");
 

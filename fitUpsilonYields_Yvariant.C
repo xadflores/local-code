@@ -75,27 +75,27 @@ using namespace RooFit;
 using namespace RooStats;
 pair<double, double> ConfidencInterval(float, RooRealVar *fnll, RooDataSet *data, RooAbsPdf *pdf);
 
-void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV data ; 2: pp@2.76TeV; 3: PbPb@276
+void fitUpsilonYields_Yvariant(int choseSample    = 3, //Input data sample.  1: pp@7TeV data ; 2: pp@2.76TeV; 3: PbPb@276
 		      int choseFitParams = 2, //0: (1s, 2s, 3s) 1: (1s, 2s/1s; 3s/1s); 2: (1S, (2s+3s)/1s)
-		      int bkgdModel      = 3, //1:LS erf*exp + pol2; 2:LS RookeyPdf + pol2; 3:erf*exp; 4:pol2; 5:erf*exp+pol2 6:pol3
-		      int fixFSR         = 1,
+		      int bkgdModel      = 4, //1:LS erf*exp + pol2; 2:LS RookeyPdf + pol2; 3:erf*exp; 4:pol2; 5:erf*exp+pol2 6:pol3
+		      int fixFSR         = 3,
 		      int fixSigma1      = 0, // 0 free; 1: fix
-		      int centralityMin = 20,
+		      int centralityMin = 0,
 		      int centralityMax = 40,
-		      float muonEtaMin  = -1.,
-		      float muonEtaMax  = 1, 
-		      float dimuYMin    = -1., 
-		      float dimuYMax    = 1.,
+		      float muonEtaMin  = -2.4,
+		      float muonEtaMax  = 2.4, 
+		      float dimuYMin    = 1.6, 
+		      float dimuYMax    = 2.4,
 		      double muonpTcut  = 4, //single muon pT cut
 		      bool plotBkg      = 0, //0: hide LS or trkRot; 1: plot LS or trkRot data points and fit lines;
 		      bool doTrkRot     = 0, //0: use LS;   1: use track rotation
 		      bool doConstrainFit   = 0,  //1: use constrain method
-		      int useRef            = 1, // # 0 none 1: MC, 2: MB
+		      int useRef            = 3, // # 0 none 1: MC, 2: MB
 		      bool plotpars         = 1, //1: plot parameters;   0: plot CMS label
 		      const char* choseSampleCase = "regit", //
 		      const char* outFigsDir      = "pdfOutput/",// figs dir outfile location
 		      TString outDatsDir          = "txtOutput",// dats dir outfile location
-		      const char* outFilePrefix   = "ratios", // yields, ratios
+		      const char* outFilePrefix   = "yields", // yields, ratios
 		      bool narrowMass             = false,
 		      float vProbPick = 0.01
 			 )
@@ -158,12 +158,17 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
    }
   double upsYCut_min    = dimuYMin;
   double upsYCut_max    = dimuYMax;
+  double upsYCut_NegMax = -1.*dimuYMin;
+  double upsYCut_NegMin = -1.*dimuYMax;
  
   int centrality_max = centralityMax; 
   int centrality_min = centralityMin; 
 
-  TString cut_ap(Form("(%d<=Centrality && Centrality<%d) && (%.2f<muPlusEta && muPlusEta < %.2f) && (%.2f<muMinusEta && muMinusEta < %.2f) && (%.2f<upsRapidity && upsRapidity<%.2f) && (vProb > %.2f) ",centrality_min,centrality_max,muonEtaMin,muonEtaMax,muonEtaMin,muonEtaMax,upsYCut_min,upsYCut_max,vProbPick));
+  TString cut_ap(Form("(%d<=Centrality && Centrality<%d) && (%.2f<muPlusEta && muPlusEta < %.2f) && (%.2f<muMinusEta && muMinusEta < %.2f) && ((%.2f<= (upsRapidity) && (upsRapidity)<=%.2f)||(upsRapidity<= %.2f && upsRapidity>=%.2f)) && (vProb > %.2f) ",centrality_min,centrality_max,muonEtaMin,muonEtaMax,muonEtaMin,muonEtaMax,upsYCut_min,upsYCut_max,upsYCut_NegMax,upsYCut_NegMin,vProbPick));
  
+  cout << "y bins :" <<endl;
+  cout << upsYCut_min << " < y < " << upsYCut_max  << " and"<< endl;
+  cout << upsYCut_NegMin << " < y < " << upsYCut_NegMax <<endl;
   int centMin = centrality_min;
   int centMax = centrality_max;
   if(choseSample==3 || choseSample==6) 
@@ -297,13 +302,13 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
   RooFormulaVar *mean3S = new RooFormulaVar("mean3S","@0*@1", RooArgList(*mean,*rat3));
 
   //detector resolution
-  RooRealVar    *sigma1  = new RooRealVar("sigma1","#sigma_{1S}",0.0623,0.01,0.3); //  MC 5tev 1S pol2 
+  RooRealVar    *sigma1  = new RooRealVar("sigma1","#sigma_{1S}",0.0623,0.01,0.4); //  MC 5tev 1S pol2 
   RooFormulaVar *sigma1S = new RooFormulaVar("sigma1S","@0"   ,RooArgList(*sigma1));
   RooFormulaVar *sigma2S = new RooFormulaVar("sigma2S","@0*@1",RooArgList(*sigma1,*rat2));
   RooFormulaVar *sigma3S = new RooFormulaVar("sigma3S","@0*@1",RooArgList(*sigma1,*rat3));
   
   /// to describe final state radiation tail on the left of the peaks
-  RooRealVar *alpha  = new RooRealVar("alpha","tail shift",1.78,0.1,20);    // MC 5tev 1S pol2 
+  RooRealVar *alpha  = new RooRealVar("alpha","tail shift",1.78,0.4,20);    // MC 5tev 1S pol2 
   RooRealVar *npow   = new RooRealVar("npow","power order",1.52,1,100);    // MC 5tev 1S pol2 
 
   // ratios fit paramters:1 (pp@7.tev), 2 (pp@2.76TeV), 3(PbPb 2.76TeV)
@@ -648,7 +653,7 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
   latex1.DrawLatex(0.15,1.-0.05*1.5,Form("%s",choseSampleLegend[choseSample]));
   latex1.DrawLatex(0.15,1.-0.05*2.5,Form("%s",choseSampleLumi[choseSample])); 
   if(choseSample!=1 && choseSample!=2 &&choseSample!=7) latex1.DrawLatex(0.15,1.-0.05*5.5,Form("Cent. %d-%d%%",centMin,centMax));
-  latex1.DrawLatex(0.15,1.-0.05*3.5,Form("%.1f < y < %.1f",dimuYMin,dimuYMax)); 
+  latex1.DrawLatex(0.15,1.-0.05*3.5,Form("%.1f < |y| < %.1f",dimuYMin,dimuYMax)); 
   latex1.DrawLatex(0.15,1.-0.05*4.5,Form("p_{T}^{#mu} > %.1f GeV/c",muonpTcut));
 
   cm.cd(0);
