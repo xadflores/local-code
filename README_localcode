@@ -1,1 +1,72 @@
-YOU SHOULD ASK ME FOR INFO ABOUT MY CRAPPY CODES
+YOU SHOULD ASK ME FOR MORE INFO ABOUT MY CRAPPY CODES
+----------------------------------------------------
+fit.pl
+----------------------------------------------------
+So, this is a perl script. This means you can run it in your terminal
+by typing:
+perl fit.pl
+and then it runs but that's not a batch script so you can track what
+the fitter does. fit.pl picks all sorts of input parameters for a specific fit
+and gives this input to the C function fitUpsilonYields.C .
+What the perl script does is basically saving you some time and
+mistakes, for it allows you to do all the fits of a given
+bin/cut/rootfile/config all in one go. There is no real need of
+changing the order of things as all the variables have to be declared
+before they are used, you just have to familiarize with the perl
+syntax which is a bit dodgy, although the use of perl is quite close
+from C. The first 3 lines should not be removed.
+$workdir is the path where your code is stored. It's convenient for
+this to have the perl script and the fitter in the same dir.
+The prefixes are there to give output paths for all the fitresults
+(txt of pdfs). I found it genuinely practical to have a new directory
+each day, but that's just personal taste. At the end of your day,
+you've done fits in all sorts of ways, with different vertex
+probability cuts sometimes, and this is never specified afterwards so
+there's also a point in the script where it says "make a directory for
+all fits with vProb > 0.01, and another for vProb > 0.05". If you're
+really busy, you can even need fits for several types of pT cuts, then
+the script also does that. In the end your code directory should look
+like this if you've done a fit with vProb > 0.01 and single muon pT >
+4 GeV:
+
+workdir/pdfOutput/0708/vP_0p01/pt_4/myWonderfulFit.pdf
+
+This script allows you to:
+     	  -  choose a given sample via its nick-name, all
+the paths for the fitter to access the rootfile are already in the
+fitter code itself, and should be changed when ported to another
+computer. Ask me the samples if you need them all.
+	  - Choose to restrict the fitting range to 8.5 - 11 GeV/c2 or
+	  or to 7 - 14 which is the usual prescription
+	  - Choose what parameter enter in the fitting : yields,
+	  ratios of excited state to ground state
+	  - loop (or not) on the possible single muon pT cuts (the
+	  background changes dramatically when doing so, and so does
+	  your estimation of each yield)
+
+After that, a serie of choices are there to fix one or several or all
+the signal shape parameters, or backrgound shape parameters.
+
+One word on centrality bins : each bin contains 2.5 % of centrality,
+so 0-40 spans from 0 to 100% .
+After picking values for cuts, centrality bins (which should be set to
+0-40 in the case of pp data, even though it's useless), you choose on
+what bkgd shapes you want to fit your data (look for 'switch
+(bkgModel)' in the fitter for info), then you choose on what rapidity
+and pT bins the fitter would run.
+Two booleans ' $dontDoRapNow, $dontDoPtNot are here in case you don't
+want to fit any pT bins or rapidity bins. Then the script directly
+skips one of the steps, depending on what you specified here. If you
+set both to 1, then only the centrality bins would be fitted.
+
+A bunch of loops are following for picking each value you specified
+one after the other, and fit them. This wouldn't need much change
+(think twice about how to do doubly-differential studies, some
+tweaking and it will work.)
+ 
+This bunch of loops is repeated 3 times : one for centrality binning,
+one for rapidity binning, and the last for pt binning. each loop has
+its own variant of fitUpsilonYields, which contains minor differences
+that were unavoidable to fit on rapidity or pT and not on
+centrality. I'm saying this now but you shouldn't bother for the
+moment.

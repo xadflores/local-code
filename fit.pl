@@ -32,7 +32,7 @@ my $choseFitParams = 0; #what you want 0: (1s, 2s, 3s) 1: (1s, 2s/1s; 3s/1s); 2:
 my @choseWhat2Fit = ("yield_m7","ratio1","ratio23","ratio32");
 my $prefix          = $choseWhat2Fit[$choseFitParams];
 
-my $ptMuStart = 3;#single muon pt > 4GeV/c cut, that no-one wants to change... that makes me sad.
+my $ptMuStart = 3;# 3: single muon pt > 4GeV/c cut, that no-one wants to change... that makes me sad.
 my $ptMuEnd = 3;
 my @chooseptMu = ("0","3","3.5","4","4.5");
 my @outFigPrefix_ptMu = ("pt_0","pt_3","pt_3p5","pt_4","pt_4p5");
@@ -48,21 +48,19 @@ my @sigma1  = ("0","1"); # fix or not sigma1
 my $sigstart = 0;
 my $sigend   = 0;
 
-my @useRef   = ("0","1","2","3"); # 0 free; 1: fix to MC 2: fixed to MB  NOOOOO !!! look in the code for doc.
+my @useRef   = ("0","1","2","3"); # !!! look for 'useRef' in the code for documentation.
 my $refstart  = 3;
 my $refend    = 3;
 
-# chose FSR param
+# choose FSR param
 #0: free; 1: both fixed 2: alpha fixed 3: npow fixed 
-# keep in mind the shape parameters might not be the same for all bins... stick to the usual n=2.3 for convenience, for now.
+# keep in mind the shape parameters' value might not be the same for all bins... stick to the usual fsr=3 (corresp. to n=2.3) for convenience, until a proper MC study says better. look for fsr parameters in the fitter code for more info.
 my @fsr     = ("0","1","2","3");
 my $fsrstart = 3;
 my $fsrend   = 3;
 
 my $centstart =0 ;
 my $centend   =0 ;
-# my @centrality_min = ("0","0", "10", "30", "50", "20","0");
-# my @centrality_max = ("40","10", "30", "50","100", "40","0");
 # ---------------------0---1---2---3---4---5----6----7----8---9--
 my @centrality_min = ("0","0","2","4","8","12","16","20","0","8"); 
 my @centrality_max = ("40","8","4","8","12","16","20","40","8","36");
@@ -84,7 +82,7 @@ my $muonEtaMax     = 2.4;
 my $dimuYMin       = -2.4; 
 my $dimuYMax       = 2.4; #used when not binning in y_ups
 my $upsPtCutMin    = 0;
-my $upsPtCutMax    = 150; #used when not binning in pT
+my $upsPtCutMax    = 150; #a large number is used when not binning in pT
 my $isam;
 
 # my @rapBinMin = ("-2.4","-1.6","-0.8","0","0.8","1.6");
