@@ -9,8 +9,8 @@ my $workDir      = "/Users/nicolas/Project/ups2013/code/";
 # vP_0p01       |    vP_0p05       |vP_0p01     |   vP_0p05
 #pt_3 | pt_3p5 | pt_4 | pt_4p5 (in each vP subdirectory)
 
-my $pdfPrefix = "pdfOutput/0708/";
-my $txtPrefix = "txtOutput/0708/";
+my $pdfPrefix = "pdfOutput/2009/";
+my $txtPrefix = "txtOutput/2009/";
 my $outFigDirStep = $workDir.$pdfPrefix;
 my $outDatDirStep = $workDir.$txtPrefix;
 my $outFigDir;
@@ -23,8 +23,8 @@ print "Welcome to SuperFitter! ";
 
 #------------------------ OUTPUT DIRECTORIES per samples
 my @sampleIndex  = ("","1","2","3","4","5","6","7"); #Input data sample. 1: pp@7TeV-d0 data ; 2: pp@7TeV-d3 data; 3: PbPb@276 regit 4: pp reco TT 5: pp reco GG 6: zhen tree, GG 7: pp@2.76TeV data
-my $samstart = 7;
-my $samend   = 7;
+my $samstart = 3;
+my $samend   = 3;
 my @choseSamples = ("","pp7tev-d0", "pp7tev-d3","pbpbRegit_cm","pbpbPPrecoTT", "pbpbPPrecoGG","pbpbZhen2011","pp2p76tev");
 # ------------------------------------------------------
 my $doNarrowMass = 1; 
@@ -32,7 +32,7 @@ my $choseFitParams = 0; #what you want 0: (1s, 2s, 3s) 1: (1s, 2s/1s; 3s/1s); 2:
 my @choseWhat2Fit = ("yield_m7","ratio1","ratio23","ratio32");
 my $prefix          = $choseWhat2Fit[$choseFitParams];
 
-my $ptMuStart = 3;# 3: single muon pt > 4GeV/c cut, that no-one wants to change... that makes me sad.
+my $ptMuStart = 3;#single muon pt > 4GeV/c cut, that no-one wants to change... that makes me sad.
 my $ptMuEnd = 3;
 my @chooseptMu = ("0","3","3.5","4","4.5");
 my @outFigPrefix_ptMu = ("pt_0","pt_3","pt_3p5","pt_4","pt_4p5");
@@ -46,28 +46,30 @@ my $vProbPrefix;
 # chose if fix sigma1:
 my @sigma1  = ("0","1"); # fix or not sigma1
 my $sigstart = 0;
-my $sigend   = 0;
+my $sigend   = 1;
 
-my @useRef   = ("0","1","2","3"); # !!! look for 'useRef' in the code for documentation.
+my @useRef   = ("0","1","2","3"); # 0 free; 1: fix to MC 2: fixed to MB  NOOOOO !!! look in the code for doc.
 my $refstart  = 3;
 my $refend    = 3;
 
-# choose FSR param
+# chose FSR param
 #0: free; 1: both fixed 2: alpha fixed 3: npow fixed 
-# keep in mind the shape parameters' value might not be the same for all bins... stick to the usual fsr=3 (corresp. to n=2.3) for convenience, until a proper MC study says better. look for fsr parameters in the fitter code for more info.
+# keep in mind the shape parameters might not be the same for all bins... stick to the usual n=2.3 for convenience, for now.
 my @fsr     = ("0","1","2","3");
-my $fsrstart = 3;
+my $fsrstart = 2;
 my $fsrend   = 3;
 
-my $centstart =0 ;
-my $centend   =0 ;
-# ---------------------0---1---2---3---4---5----6----7----8---9--
-my @centrality_min = ("0","0","2","4","8","12","16","20","0","8"); 
-my @centrality_max = ("40","8","4","8","12","16","20","40","8","36");
-# 0-5 | 5-10 | 10-20 | 20-30 | 30-40 | 40-50 | 50-100 | 0-20 | 20-90(alice comparisons)
+my $centstart =1 ;
+my $centend   =13 ;
+#my @centrality_min = ("0","4", "8", "0", "50", "20","0");
+#my @centrality_max = ("4","8", "24", "8","100", "40","0");
+# ----------------------0----1---2---3----4----5----6----7---8---9---10---11--12---13--; 0->7 1S binning, 8->11 2S binning, n>11 for trials
+ my @centrality_min = ("0", "0","2","4", "8","12","16","24","0","4", "8","0","16","28"); 
+ my @centrality_max = ("40","2","4","8","12","16","24","40","4","8","24","8","28","40");
+# 0-5 | 5-10 | 10-20 | 20-30 | 30-40 | 40-50(60) | 50(60)-100 | 0-20 | 20-90(alice comparisons)
 
 my $modelstart =1;
-my $modelend   = 6;
+my $modelend   =6;
 #Background Model.  1: LS erf*exp + pol2; 2: LS RookeyPdf + pol2; 3: erf*exp; 4: pol2; 5: erf*exp+pol2 6: poly 3
 my @bkgModel        = ("","1","2","3","4","5","6");
 
@@ -82,19 +84,23 @@ my $muonEtaMax     = 2.4;
 my $dimuYMin       = -2.4; 
 my $dimuYMax       = 2.4; #used when not binning in y_ups
 my $upsPtCutMin    = 0;
-my $upsPtCutMax    = 150; #a large number is used when not binning in pT
+my $upsPtCutMax    = 150; #used when not binning in pT
 my $isam;
 
 # my @rapBinMin = ("-2.4","-1.6","-0.8","0","0.8","1.6");
 # my @rapBinMax = ("-1.6","-0.8","0","0.8","1.6","2.4");
-# rapidity binning suited for PbPb:
-my @rapBinMin = ("0.","0.4","0.7","1.0","1.5");
-my @rapBinMax = ("0.4","0.7","1.0","1.5","2.4");
+# rapidity binning suited for PbPb 1S (0->4), 2S (5->7);
+my @rapBinMin = ("0.","0.4","0.7","1.0","1.5","0.","1.2","0.");
+my @rapBinMax = ("0.4","0.7","1.0","1.5","2.4","1.2","2.4","2.4");
 
-# pT binning:
-my @upsPtBinMin = ("0","2.5","5","7.5","10","30");
-my @upsPtBinMax = ("2.5","5","7.5","10","30","150");
-my $dontDoRapNow =0;
+
+# pT binning for 2S:
+#my @upsPtBinMin = ("0","6.5","10","0");	 
+#my @upsPtBinMax = ("6.5","10","20","20");
+# pT binning for 1S (0->5), 2S (6->9);
+my @upsPtBinMin = ("0","2.5","5","8","12","20","0","6.5","10","0");	 
+my @upsPtBinMax = ("2.5","5","8","12","20","150","6.5","10","20","20");
+my $dontDoRapNow =1;
 my $dontDoPtNow =1;
 #loops for mkdir purposes
 for (my $ivProb=$vProbStart; $ivProb<=$vProbEnd; $ivProb++)
@@ -221,7 +227,7 @@ for ( $isam=$samstart; $isam<=$samend; $isam++)
 			#  next if($iref==1);# do not fix to MC 
 			next if(($iref==1 || $iref==2) && ($isig==0 && $ifsr==0));
 			
-			for(my $iRap=0; $iRap<=4; $iRap++){ #hardcoded... so what?
+			for(my $iRap=0; $iRap<=7; $iRap++){ #hardcoded... so what?
 			    $dimuYMin=$rapBinMin[$iRap];
 			    $dimuYMax=$rapBinMax[$iRap];
 			   
@@ -255,7 +261,7 @@ for ( $isam=$samstart; $isam<=$samend; $isam++)
 			"); 
 			    } #bkg 
 			} # rapidity bins
-			for(my $iUpsPt=0; $iUpsPt<=5; $iUpsPt++){ #hardcoded... so what?
+			for(my $iUpsPt=0; $iUpsPt<=9; $iUpsPt++){ #hardcoded... so what?
 			    $upsPtCutMin=$upsPtBinMin[$iUpsPt];
 			    $upsPtCutMax=$upsPtBinMax[$iUpsPt];
 			    $dimuYMin       = -2.4; 

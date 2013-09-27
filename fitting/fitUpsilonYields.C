@@ -45,7 +45,7 @@
 
 double mass_l =  7.0;
 double mass_h = 14.0;
-double binw   = 0.1;    //bin width of the histogram
+double binw   = 0.1;    //bin width of the histogram(plotting and 'pull' distribution)
 
 const int nData   = 8;
 const char* choseSampleLegend[nData] = {"",
@@ -238,7 +238,7 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
   RooRealVar* muMinusPt  = new RooRealVar("muMinusPt","muMinusPt",muonpTcut,50);
   RooRealVar* muPlusEta  = new RooRealVar("muPlusEta","muPlusEta",  -2.4,2.4);
   RooRealVar* muMinusEta = new RooRealVar("muMinusEta","muMinusEta",-2.4,2.4);
-  RooRealVar* runNumber  = new RooRealVar("runNb",  "runNb",210000, 222000);
+  RooRealVar* runNumber  = new RooRealVar("runNb",  "runNb",150000, 222000);
 
   // *************************************************** importing
   //##### import unlike-sign data set
@@ -287,7 +287,7 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
   const double M2S = 10.023;  //upsilon 2S pdg mass value
   const double M3S = 10.355;  //upsilon 3S pdg mass value
   
-  RooRealVar  *mean = new RooRealVar("mass1S","#Upsilon mean",M1S,M1S-0.1,M1S+0.1);
+  RooRealVar  *mean = new RooRealVar("mass_{1S}","#Upsilon mean",M1S,M1S-0.1,M1S+0.1);
   RooConstVar *rat2 = new RooConstVar("rat2", "rat2", M2S/M1S);
   RooConstVar *rat3 = new RooConstVar("rat3", "rat3", M3S/M1S);
 
@@ -297,23 +297,23 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
   RooFormulaVar *mean3S = new RooFormulaVar("mean3S","@0*@1", RooArgList(*mean,*rat3));
 
   //detector resolution
-  RooRealVar    *sigma1  = new RooRealVar("sigma1","#sigma_{1S}",0.0623,0.01,0.3); //  MC 5tev 1S pol2 
+  RooRealVar    *sigma1  = new RooRealVar("sigma1","#sigma_{1S}",0.0920.045,0.3); //  MC 5tev 1S pol2 
   RooFormulaVar *sigma1S = new RooFormulaVar("sigma1S","@0"   ,RooArgList(*sigma1));
   RooFormulaVar *sigma2S = new RooFormulaVar("sigma2S","@0*@1",RooArgList(*sigma1,*rat2));
   RooFormulaVar *sigma3S = new RooFormulaVar("sigma3S","@0*@1",RooArgList(*sigma1,*rat3));
   
   /// to describe final state radiation tail on the left of the peaks
-  RooRealVar *alpha  = new RooRealVar("alpha","tail shift",1.78,0.1,20);    // MC 5tev 1S pol2 
-  RooRealVar *npow   = new RooRealVar("npow","power order",1.52,1,100);    // MC 5tev 1S pol2 
+  RooRealVar *alpha  = new RooRealVar("alpha_{CB}","tail shift",0.1,10);    // MC 5tev 1S pol2 
+  RooRealVar *npow   = new RooRealVar("npow","power order",1.0000001,100);    // MC 5tev 1S pol2 
 
   // ratios fit paramters:1 (pp@7.tev), 2 (pp@2.76TeV), 3(PbPb 2.76TeV)
   //no. all values except last column come from AN2011-455-v9
-  // col.1 = MonteCarlo
+  // col.1 = MonteCarlo in 2011
   // col.2 = PbPb data nominal fit
   // col.3 = MC from 2013 vineet
   double alpha_mc[7]   = {0, 1.67 , 0.98 , 1.626};//
   double npow_mc[7]    = {0, 2.3  , 2.3  , 2.3};// 
-  double sigma1_mc[7]  = {0, 0.090, 0.078,0.06506};// 
+  double sigma1_mc[7]  = {0, 0.092, 0.078,0.092};// 0.06506
 
   alpha->setVal(alpha_mc[useRef]);
   npow->setVal(npow_mc[useRef]);
@@ -386,17 +386,17 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
  					   RooArgList(*cb3S_1,*cb3S_2),*sigmaFraction); // = cb3S1*sigmaFrac + cb3S2*(1-sigmaFrac)
   
   // *************************************************** free param in the fit
-  int nt = 100000;
+  int nt = 10000;
   RooRealVar *nsig1f   = new RooRealVar("N_{#Upsilon(1S)}","nsig1S",nt*0.25,0,10*nt);
   switch (choseFitParams)
     {
-    case 0://use the YIELDs of 2S and 3S as free parameters
-      RooRealVar *nsig2f  = new RooRealVar("N2S","nsig2S",   nt*0.25,-1*nt,10*nt);
-      RooRealVar *nsig3f  = new RooRealVar("N3S","nsig3S",   nt*0.25,-1*nt,10*nt);
+    case 0://use the YIELDs of 2S and 3S as free parameters 
+      RooRealVar *nsig2f  = new RooRealVar("N_{#Upsilon(2S)}","fsig2S",   nt*0.25,-1*nt,10*nt);
+      RooRealVar *nsig3f  = new RooRealVar("N_{#Upsilon(3S)}","fsig3S",   nt*0.25,-1*nt,10*nt);
       break;
-    case 1:  //use the RATIOs of 2S and 3S as free parameters
-      RooRealVar *f2Svs1S   = new RooRealVar("R_{#frac{2S}{1S}}","f2Svs1S",0.26,-0.1,1.0);
-      RooRealVar *f3Svs1S   = new RooRealVar("R_{#frac{3S}{1S}}","f3Svs1S",0.13,-0.1,1.0);
+    case 1:  //use the RATIOs of 2S and 3S as free parameters 
+      RooRealVar *f2Svs1S   = new RooRealVar("R_{#frac{2S}{1S}}","f2Svs1S",-0.1,1.0);
+      RooRealVar *f3Svs1S   = new RooRealVar("R_{#frac{3S}{1S}}","f3Svs1S",-0.1,1.0);
       RooFormulaVar *nsig2f = new RooFormulaVar("N2S","@0*@1", RooArgList(*nsig1f,*f2Svs1S));
       RooFormulaVar *nsig3f = new RooFormulaVar("N3S","@0*@1", RooArgList(*nsig1f,*f3Svs1S));
       f2Svs1S->setConstant(kFALSE);
@@ -405,17 +405,17 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
     case 2:// do (2s+3s)/1s
       RooRealVar *f2Svs1S   = new RooRealVar("R_{#frac{2S}{1S}}","f2Svs1S",0.26,-0.1,1.0);
       RooRealVar *f23vs1S   = new RooRealVar("R_{#frac{2S+3S}{1S}}","f23vs1S",0.45,-0.1,1);
-      RooFormulaVar *nsig2f = new RooFormulaVar("N2S","@0*@1", RooArgList(*nsig1f,*f2Svs1S));
-      RooFormulaVar *nsig3f = new RooFormulaVar("N3S","@0*@2-@0*@1", 
- 						RooArgList(*nsig1f,*f2Svs1S,*f23vs1S));
+      RooFormulaVar *fsig2f = new RooFormulaVar("N2S","@0*@1", RooArgList(*fsig1S,*f2Svs1S));
+      RooFormulaVar *fsig3f = new RooFormulaVar("N3S","@0*@2-@0*@1", 
+ 						RooArgList(*fsig1S,*f2Svs1S,*f23vs1S));
       break;
     case 3://do 2s/1s, 3s/1s, 3s/2s
       RooRealVar *f2Svs1S   = new RooRealVar("R_{#frac{2S}{1S}}","f2Svs1S",0.26,-0.1,1.0);
       RooRealVar *f3Svs1S   = new RooRealVar("R_{#frac{3S}{1S}}","f3Svs1S",0.13,-0.1,1.0);
-      RooFormulaVar *nsig2f = new RooFormulaVar("N2S","@0*@1", RooArgList(*nsig1f,*f2Svs1S));
-      //   RooFormulaVar *nsig3f = new RooFormulaVar("N3S","@0*@1", RooArgList(*nsig1f,*f3Svs1S));
+      RooFormulaVar *fsig2f = new RooFormulaVar("N2S","@0*@1", RooArgList(*fsig1S,*f2Svs1S));
+      //   RooFormulaVar *fsig3f = new RooFormulaVar("N3S","@0*@1", RooArgList(*fsig1S,*f3Svs1S));
       RooRealVar *f3Svs2S = new RooRealVar("R_{#frac{3S}{2S}}","f3Svs2S",0.5,-1,1);
-      RooFormulaVar *nsig3f= new RooFormulaVar("N32S","@0/@1",RooArgList(*f3Svs1S,*f2Svs1S));
+      RooFormulaVar *fsig3f= new RooFormulaVar("N32S","@0/@1",RooArgList(*f3Svs1S,*f2Svs1S));
       f2Svs1S->setConstant(kFALSE);
       f3Svs1S->setConstant(kFALSE);
       break;
@@ -426,13 +426,12 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
     }  
 
   // bkg Chebychev
-  RooRealVar *nbkgd   = new RooRealVar("nBkgd","nbkgd",nt*0.75,-100,10*nt);
-  RooRealVar *bkg_a1  = new RooRealVar("a1_bkg", "bkg_{a1}", 0, -2, 2);
-  RooRealVar *bkg_a2  = new RooRealVar("a2_Bkg", "bkg_{a2}", 0, -2, 2);
-  RooRealVar *bkg_a3  = new RooRealVar("a3_Bkg", "bkg_{a3}", 0, -0.5, 2);
+  RooRealVar *nbkgd   = new RooRealVar("n_{Bkgd}","nbkgd",0,10*nt);
+  RooRealVar *bkg_a1  = new RooRealVar("a1_{bkg}", "bkg_{a1}", 0, -2, 2);
+  RooRealVar *bkg_a2  = new RooRealVar("a2_{bkg}", "bkg_{a2}", 0, -2, 2);
+  RooRealVar *bkg_a3  = new RooRealVar("a3_{bkg}", "bkg_{a3}", 0, -1, 1);
 
-  RooAbsPdf  *bkgPdf  = new RooChebychev("bkgPdf","bkgPdf",
- 					 *mass, RooArgList(*bkg_a1,*bkg_a2,*bkg_a3));
+  // RooRealVar *fbkg = new RooRealVar("f_{bkg}","f_{bkg}",0.,1.); //fraction of background events found in fitting data.
 
   //  likesign
   RooRealVar *nLikesignbkgd = new RooRealVar("NLikesignBkg","nlikesignbkgd",nt*0.75,0,10*nt);
@@ -446,8 +445,8 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
       nLikesignbkgd->setVal(likesignData->sumEntries());
       nLikesignbkgd->setError(sqrt(likesignData->sumEntries()));
     }
-  nbkgd->setVal(data0->sumEntries());
-  nbkgd->setError(sqrt(data0->sumEntries()));
+  // nbkgd->setVal(data0_ap->sumEntries());
+  // nbkgd->setError(sqrt(data0_ap->sumEntries()));
   if (doConstrainFit) 
     {
       RooGaussian* nLikesignbkgd_constr = new RooGaussian("nLikesignbkgd_constr","nLikesignbkgd_constr",
@@ -462,9 +461,9 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
  
 
  // *************************************************** bkgModel
-  RooRealVar turnOn("turnOn","turnOn", 6., 0., 13.);
-  RooRealVar width("width","width", 4.1,2.3, 20.);// MB 2.63
-  RooRealVar decay("decay","decay", 3.5, 1, 100.);// MB: 3.39
+  RooRealVar turnOn("turnOn","turnOn", 6., 14.);
+  RooRealVar width("width","width", 2., 20.);// MB 2.63
+  RooRealVar decay("decay","decay", 0, 10.);// MB: 3.39
 
   width.setConstant(false);
   decay.setConstant(false);
@@ -478,12 +477,12 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
   //pdf_combinedbkgd; // total bkg pdf. usually form*normalization
   switch (bkgdModel) 
     {
-    case 1 :  //(erf*exp+pol2 ) to fit the SS, then fix the shape and fit OS, in case of constrain option
+    case 1 :  //(erf*exp ) to fit the SS, then fix the shape and fit OS, in case of constrain option
       bkg_a3->setConstant(true);
-      RooGenericPdf *thisPdf = new  RooGenericPdf("thisPdf","thisPdf",
+      RooGenericPdf *ErrPdf = new  RooGenericPdf("ErrPdf","ErrPdf",
  						  "exp(-@0/decay)*(TMath::Erf((@0-turnOn)/width)+1)",
  						  RooArgList(*mass,turnOn,width,decay));
-      RooFitResult* fit_1st  = thisPdf->fitTo(*likesignData,Save(),NumCPU(4)) ; // likesign data
+      RooFitResult* fit_1st  = ErrPdf->fitTo(*likesignData,Save(),NumCPU(4)) ; // likesign data
       if (doTrkRot) fit_1st  = thisPdf->fitTo(*TrkRotData,Save(),NumCPU(4)) ;
         
       if (doConstrainFit) 
@@ -506,52 +505,59 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
  	  width.setConstant(kTRUE);
  	  decay.setConstant(kTRUE);
  	}
-      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("pdf_combinedbkgd","total combined background pdf",
- 					  RooArgList(*bkgPdf,*thisPdf),
- 					  RooArgList(*nResidualbkgd,*nLikesignbkgd));
+      RooRealVar *fLS =new RooRealVar("R_{SS/OS}","Empiric LS/SS ratio",0.,1.);
+      RooAbsPdf  *ChebPdf  = new RooChebychev("ChebPdf","ChebPdf",
+					 *mass, RooArgList(*bkg_a1,*bkg_a2));
+      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("bkgPdf","total combined background pdf",
+						      RooArgList(*ErrPdf,*ChebPdf),
+						      RooArgList(*fLS));
       break;
     case 2 : //us eRooKeysPdf to smooth the SS, then fit OS with pol+keys
       bkg_a3->setConstant(true);
-      RooKeysPdf *thisPdf        = new RooKeysPdf("thisPdf","thisPdf",*mass,*likesignData,
+      RooRealVar *fLS =new RooRealVar("R_{SS/OS}","Empiric LS/SS ratio",0.,1.);
+      RooKeysPdf *KeysPdf        = new RooKeysPdf("KeysPdf","KeysPdf",*mass,*likesignData,
  						  RooKeysPdf::MirrorBoth, 1.4);
+      RooAbsPdf  *ChebPdf  = new RooChebychev("ChebPdf","ChebPdf",
+					      *mass, RooArgList(*bkg_a1,*bkg_a2));
       if (doTrkRot) thisPdf     = new RooKeysPdf("thisPdf","thisPdf",*mass,*TrkRotData,
  						  RooKeysPdf::MirrorBoth, 1.4);
-      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("pdf_combinedbkgd","total combined background pdf",
- 						      RooArgList(*bkgPdf,*thisPdf),
- 						      RooArgList(*nResidualbkgd,*nLikesignbkgd));
+      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("bkgPdf","total combined background pdf",
+ 						      RooArgList(*KeysPdf,*ChebPdf),
+ 						      RooArgList(*fLS));
       break;
     case 3 : //use error function to fit the OS directly
       bkg_a3->setConstant(true);
-      RooGenericPdf *thisPdf            = new  RooGenericPdf("thisPdf","thisPdf",
+      RooAbsPdf *pdf_combinedbkgd            = new  RooGenericPdf("bkgPdf","bkgPdf",
  							     "exp(-@0/decay)*(TMath::Erf((@0-turnOn)/width)+1)",
  							     RooArgList(*mass,turnOn,width,decay));
-      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf("pdf_combinedbkgd","total combined background pdf",
- 						     RooArgList(*thisPdf),
- 						     RooArgList(*nbkgd));
+      // RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf("pdf_combinedbkgd","total combined background pdf",
+      // 						     RooArgList(*thisPdf),
+      // 						     RooArgList(*nbkgd));
       break;
       
     case 4 : //use pol 2 to fit the OS directly
       bkg_a3->setConstant(true);
-      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("pdf_combinedbkgd","total combined background pdf",
- 						      RooArgList(*bkgPdf),
- 						      RooArgList(*nbkgd));
+      RooAbsPdf  *pdf_combinedbkgd  = new RooChebychev("bkgPdf","bkgPdf",
+					*mass, RooArgList(*bkg_a1,*bkg_a2));
       break;
     case 5 : //use ( error function + polynomial 2) to fit the OS directly
       bkg_a3->setConstant(true);
-      RooGenericPdf *thisPdf     = new  RooGenericPdf("thisPdf","thisPdf",
+      RooRealVar *fPol   = new RooRealVar("F_{pol}","fraction of polynomial distribution",0.,1);
+      RooAbsPdf  *ChebPdf  = new RooChebychev("ChebPdf","ChebPdf",
+					      *mass, RooArgList(*bkg_a1,*bkg_a2,*bkg_a3));
+      RooGenericPdf *ErrPdf     = new  RooGenericPdf("ErrPdf","ErrPdf",
  						      "exp(-@0/decay)*(TMath::Erf((@0-turnOn)/width)+1)",
  						      RooArgList(*mass,turnOn,width,decay));
-      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("pdf_combinedbkgd","total combined background pdf",
- 						      RooArgList(*bkgPdf,*thisPdf),
- 						      RooArgList(*nResidualbkgd,*nLikesignbkgd));
+      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("bkgPdf","total combined background pdf",
+ 						      RooArgList(*ChebPdf,*ErrPdf),
+ 						      RooArgList(*fPol));
       break;
-    case 6: // pol 3 to fit OS dirrectly
-      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("pdf_combinedbkgd","total combined background pdf",
- 						      RooArgList(*bkgPdf),
- 						      RooArgList(*nbkgd));
+    case 6: // pol 3 to fit OS dirrectly 
+	RooAbsPdf  *pdf_combinedbkgd  = new RooChebychev("bkgPdf","bkgPdf",
+ 					 *mass, RooArgList(*bkg_a1,*bkg_a2,*bkg_a3));
       break;
     default :
-      cout<<"Donno what you are talking about! Pick anothe fit option!"<<endl;
+      cout<<"Donno what you are talking about! Pick another fit option!"<<endl;
       break;
     }
   
@@ -563,17 +569,20 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
     {
       pdf_unconstr   = new RooAddPdf ("pdf_unconstr","total signal+background pdf",
  				      RooArgList(*sig1S,*sig2S,*sig3S,*pdf_combinedbkgd),
- 				      RooArgList(*nsig1f,*nsig2f,*nsig3f,*nbkgd));
+ 				      RooArgList(*nsig1f,*fsig2f,*fsig3f,*nbkgd));
       RooProdPdf *pdf            = new RooProdPdf ("pdf","total constr pdf",
  						   RooArgSet(*pdf_unconstr,*turnOn_constr,*width_constr,*decay_constr,*nLikesignbkgd_constr));
       fit_2nd      = pdf->fitTo(*data,Constrained(),Save(kTRUE),Extended(kTRUE),Minos(doMinos),NumCPU(6));
     }
   else 
     {
-      RooAbsPdf  *pdf             = new RooAddPdf ("pdf","total signal+background pdf",
- 						   RooArgList(*sig1S,*sig2S,*sig3S,*pdf_combinedbkgd),
+      // RooAbsPdf  *pdf             = new RooAddPdf ("pdf","total signal+background pdf",
+      // 						   RooArgList(*sig1S,*sig2S,*sig3S,*pdf_combinedbkgd),
+      // 						   RooArgList(*nsig1f,*nsig2f,*nsig3f,*nbkgd));
+      RooAbsPdf  *pdf             = new RooAddPdf ("pdf","total p.d.f.",
+						   RooArgList(*sig1S,*sig2S,*sig3S,*pdf_combinedbkgd),
  						   RooArgList(*nsig1f,*nsig2f,*nsig3f,*nbkgd));
-      fit_2nd       = pdf->fitTo(*data,Save(kTRUE),Extended(kTRUE),Minos(doMinos));
+      fit_2nd       = pdf->fitTo(*data,Save(kTRUE),Minos(doMinos));
     }
 
   // *************************************************** plotting
@@ -582,31 +591,44 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
   RooPlot* frame = mass->frame(Bins(nbins),Range(mass_l,mass_h));
  
   data->plotOn(frame,Name("theData"),MarkerSize(0.8));
-  pdf->plotOn(frame,Name("thePdf")); // signal + bkg pdf
-  // pdf->plotOn(frame,Name("thePdf"),VisualizeError(*fit_2nd,1),FillColor(kOrange)); /// change this, to see errrors
-  if (plotBkg) {
-    if (doTrkRot) TrkRotData->plotOn(frame,Name("TrkRotData"),MarkerSize(0.8),MarkerColor(kMagenta),MarkerStyle(22));
-    else likesignData->plotOn(frame,Name("theLikeSignData"),MarkerSize(0.8),MarkerColor(kRed),MarkerStyle(24));
-    
-  }
+  //pdf->plotOn(frame,Name("thePdf")); // signal + bkg pdf
+  pdf->plotOn(frame,Name("thePdf")); /// change this, to see errrors
   RooArgSet * pars = pdf->getParameters(data);
 
   //draw the fit lines and save plots
-  data->plotOn(frame,Name("theData"),MarkerSize(0.8));
-  pdf->plotOn(frame,Components("thisPdf"),Name("theBkg"),LineStyle(5),LineColor(kGreen));// polX bkg
-  pdf->plotOn(frame,Components("pdf_combinedbkgd"),LineStyle(kDashed));// total bkg, blue
-  if (plotBkg) 
-    {
-      if (doTrkRot && bkgdModel!=4 && bkgdModel!=6) pdf->plotOn(frame,Components("thisPdf"),Name("theLikeSign"),LineStyle(9),LineColor(kMagenta));// trk rot
-      else
- 	{
- 	  if(bkgdModel!=4 && bkgdModel!=6)
- 	    {
- 	      pdf->plotOn(frame,Components("thisPdf"),Name("theLikeSign"),LineStyle(9),LineColor(kRed)); // like sign component
- 	      RooArgSet * pars = thisPdf->getParameters(likesignData);
- 	    }
- 	}
+    switch(bkgdModel){
+    case 1:
+      pdf->plotOn(frame,Components("ChebPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1),FillColor(kBlue));
+      pdf->plotOn(frame,Components("ErrPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1),FillColor(kOrange));// ErrFunction bkg
+      pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),LineStyle(kDashed));
+      RooArgSet * pars = ErrPdf->getParameters(likesignData);
+      break;
+    case 2:
+      pdf->plotOn(frame,Components("ChebPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1),FillColor(kBlue));
+      pdf->plotOn(frame,Components("KeysPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1),FillColor(kOrange));// ErrFunction bk
+      RooArgSet * pars = KeysPdf->getParameters(likesignData);
+      pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),LineStyle(kDashed));
+      break;
+    case 3:
+      pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1),LineStyle(kDashed));
+      pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),LineStyle(kDashed));
+      break;
+    case 4:
+      pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1));
+      pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),LineStyle(kDashed));
+      break;
+    case 5:
+      pdf->plotOn(frame,Components("ChebPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1),FillColor(kBlue));
+      pdf->plotOn(frame,Components("ErrPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1),FillColor(kOrange));// ErrFunction bk
+      pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),LineStyle(kDashed));
+      break;
+    case 6:
+      pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1));
+      break;
+    default:
+      break;
     }
+  //pdf->plotOn(frame,Components("pdf_combinedbkgd"),Name("theBkg"),LineStyle(kDashed));// total bkg, blue
   // need this re-plotting, so the pulls pick the right fit
   pdf->plotOn(frame,Name("thePdf")); // signal + bkg pdf
   //----------------------------------------------------------------------  
@@ -766,7 +788,7 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
   //   cout << "N3S= "<< myn3s << "\t err= " << myn3s_err <<endl;
   // }
   // outfileFitResults <<endl;
-  switch(choseFitParams) {
+ switch(choseFitParams) {
   case 0:
     outfileFitResults<<figName_<<" "<<nsig1f->getVal()<<" "<<nsig1f->getError()<<" "<<nsig2f->getVal()<<" "<<nsig2f->getError()<<" "<<nsig3f->getVal()<<" "<<nsig3f->getError()<<" "<<npow->getVal()<<" "<<npow->getError()<<" "<<alpha->getVal()<<" "<<alpha->getError()<<" "<<sigma1->getVal()<<" "<<sigma1->getError()<<" "<<2*nFitParam+2*baseNll<<" "<<fit_2nd->edm()<<" "<<UnNormChi2<<" "<<UnNormChi2/Dof<<" "<<TMath::Prob(UnNormChi2,Dof)<<" "<<Dof<<" "<<nFitParam<<" "<<baseNll<< endl;
     break;

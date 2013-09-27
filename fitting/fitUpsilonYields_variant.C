@@ -427,8 +427,6 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
   RooRealVar *bkg_a2  = new RooRealVar("a2_Bkg", "bkg_{a2}", 0, -5, 5);
   RooRealVar *bkg_a3  = new RooRealVar("a3_Bkg", "bkg_{a3}", 0, -0.5, 2);
 
-  RooAbsPdf  *bkgPdf  = new RooChebychev("bkgPdf","bkgPdf",
-					 *mass, RooArgList(*bkg_a1,*bkg_a2,*bkg_a3));
 
   //  likesign
   RooRealVar *nLikesignbkgd = new RooRealVar("NLikesignBkg","nlikesignbkgd",nt*0.75,0,10*nt);
@@ -442,8 +440,8 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
       nLikesignbkgd->setVal(likesignData->sumEntries());
       nLikesignbkgd->setError(sqrt(likesignData->sumEntries()));
     }
-  nbkgd->setVal(data0->sumEntries());
-  nbkgd->setError(sqrt(data0->sumEntries()));
+  // nbkgd->setVal(data0->sumEntries());
+  // nbkgd->setError(sqrt(data0->sumEntries()));
   if (doConstrainFit) 
     {
       RooGaussian* nLikesignbkgd_constr = new RooGaussian("nLikesignbkgd_constr","nLikesignbkgd_constr",
@@ -472,82 +470,89 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
 
   //thisPdf: form of the bkg pdf
   //pdf_combinedbkgd; // total bkg pdf. usually form*normalization
-  switch (bkgdModel) 
+    switch (bkgdModel) 
     {
-    case 1 :  //(erf*exp+pol2 ) to fit the SS, then fix the shape and fit OS, in case of constrain option
+    case 1 :  //(erf*exp ) to fit the SS, then fix the shape and fit OS, in case of constrain option
       bkg_a3->setConstant(true);
-      RooGenericPdf *thisPdf = new  RooGenericPdf("thisPdf","thisPdf",
-						  "exp(-@0/decay)*(TMath::Erf((@0-turnOn)/width)+1)",
-						  RooArgList(*mass,turnOn,width,decay));
-      RooFitResult* fit_1st  = thisPdf->fitTo(*likesignData,Save(),NumCPU(4)) ; // likesign data
+      RooGenericPdf *ErrPdf = new  RooGenericPdf("ErrPdf","ErrPdf",
+ 						  "exp(-@0/decay)*(TMath::Erf((@0-turnOn)/width)+1)",
+ 						  RooArgList(*mass,turnOn,width,decay));
+      RooFitResult* fit_1st  = ErrPdf->fitTo(*likesignData,Save(),NumCPU(4)) ; // likesign data
       if (doTrkRot) fit_1st  = thisPdf->fitTo(*TrkRotData,Save(),NumCPU(4)) ;
         
       if (doConstrainFit) 
-	{ // allow parameters to vary within cenral value from above fit + their sigma
-	  turnOn_constr = new RooGaussian("turnOn_constr","turnOn_constr",
-					   turnOn,
-					   RooConst(turnOn.getVal()),
-					   RooConst(turnOn.getError()));
-	  width_constr   = new RooGaussian("width_constr","width_constr",
-					   width,					   RooConst(width.getVal()),
-					   RooConst(width.getError()));
-	  decay_constr    = new RooGaussian("decay_constr","decay_constr",
-					   decay,
-					   RooConst(decay.getVal()),
-					   RooConst(decay.getError()));
-	}
+ 	{ // allow parameters to vary within cenral value from above fit + their sigma
+ 	  turnOn_constr = new RooGaussian("turnOn_constr","turnOn_constr",
+ 					   turnOn,
+ 					   RooConst(turnOn.getVal()),
+ 					   RooConst(turnOn.getError()));
+ 	  width_constr   = new RooGaussian("width_constr","width_constr",
+ 					   width,					   RooConst(width.getVal()),
+ 					   RooConst(width.getError()));
+ 	  decay_constr    = new RooGaussian("decay_constr","decay_constr",
+ 					   decay,
+ 					   RooConst(decay.getVal()),
+ 					   RooConst(decay.getError()));
+ 	}
       else 
-	{
-	  turnOn.setConstant(kTRUE);
+ 	{
+ 	  turnOn.setConstant(kTRUE);
  	  width.setConstant(kTRUE);
  	  decay.setConstant(kTRUE);
-	}
-      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("pdf_combinedbkgd","total combined background pdf",
-					  RooArgList(*bkgPdf,*thisPdf),
-					  RooArgList(*nResidualbkgd,*nLikesignbkgd));
+ 	}
+      RooRealVar *fLS =new RooRealVar("R_{SS/OS}","Empiric LS/SS ratio",0.,1.);
+      RooAbsPdf  *ChebPdf  = new RooChebychev("ChebPdf","ChebPdf",
+					 *mass, RooArgList(*bkg_a1,*bkg_a2));
+      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("bkgPdf","total combined background pdf",
+						      RooArgList(*ErrPdf,*ChebPdf),
+						      RooArgList(*fLS));
       break;
     case 2 : //us eRooKeysPdf to smooth the SS, then fit OS with pol+keys
       bkg_a3->setConstant(true);
-      RooKeysPdf *thisPdf        = new RooKeysPdf("thisPdf","thisPdf",*mass,*likesignData,
-						  RooKeysPdf::MirrorBoth, 1.4);
+      RooRealVar *fLS =new RooRealVar("R_{SS/OS}","Empiric LS/SS ratio",0.,1.);
+      RooKeysPdf *KeysPdf        = new RooKeysPdf("KeysPdf","KeysPdf",*mass,*likesignData,
+ 						  RooKeysPdf::MirrorBoth, 1.4);
+      RooAbsPdf  *ChebPdf  = new RooChebychev("ChebPdf","ChebPdf",
+					      *mass, RooArgList(*bkg_a1,*bkg_a2));
       if (doTrkRot) thisPdf     = new RooKeysPdf("thisPdf","thisPdf",*mass,*TrkRotData,
-						  RooKeysPdf::MirrorBoth, 1.4);
-      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("pdf_combinedbkgd","total combined background pdf",
-						      RooArgList(*bkgPdf,*thisPdf),
-						      RooArgList(*nResidualbkgd,*nLikesignbkgd));
+ 						  RooKeysPdf::MirrorBoth, 1.4);
+      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("bkgPdf","total combined background pdf",
+ 						      RooArgList(*KeysPdf,*ChebPdf),
+ 						      RooArgList(*fLS));
       break;
     case 3 : //use error function to fit the OS directly
       bkg_a3->setConstant(true);
-      RooGenericPdf *thisPdf            = new  RooGenericPdf("thisPdf","thisPdf",
-							     "exp(-@0/decay)*(TMath::Erf((@0-turnOn)/width)+1)",
-							     RooArgList(*mass,turnOn,width,decay));
-      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf("pdf_combinedbkgd","total combined background pdf",
-						     RooArgList(*thisPdf),
-						     RooArgList(*nbkgd));
+      RooAbsPdf *pdf_combinedbkgd            = new  RooGenericPdf("bkgPdf","bkgPdf",
+ 							     "exp(-@0/decay)*(TMath::Erf((@0-turnOn)/width)+1)",
+ 							     RooArgList(*mass,turnOn,width,decay));
+      // RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf("pdf_combinedbkgd","total combined background pdf",
+      // 						     RooArgList(*thisPdf),
+      // 						     RooArgList(*nbkgd));
       break;
       
     case 4 : //use pol 2 to fit the OS directly
       bkg_a3->setConstant(true);
-      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("pdf_combinedbkgd","total combined background pdf",
-						      RooArgList(*bkgPdf),
-						      RooArgList(*nbkgd));
+      RooAbsPdf  *pdf_combinedbkgd  = new RooChebychev("bkgPdf","bkgPdf",
+					*mass, RooArgList(*bkg_a1,*bkg_a2));
       break;
     case 5 : //use ( error function + polynomial 2) to fit the OS directly
       bkg_a3->setConstant(true);
-      RooGenericPdf *thisPdf     = new  RooGenericPdf("thisPdf","thisPdf",
-						      "exp(-@0/decay)*(TMath::Erf((@0-turnOn)/width)+1)",
-						      RooArgList(*mass,turnOn,width,decay));
-      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("pdf_combinedbkgd","total combined background pdf",
-						      RooArgList(*bkgPdf,*thisPdf),
-						      RooArgList(*nResidualbkgd,*nLikesignbkgd));
+      RooRealVar *fPol   = new RooRealVar("F_{pol}","fraction of polynomial distribution",0.,1);
+      RooAbsPdf  *ChebPdf  = new RooChebychev("ChebPdf","ChebPdf",
+					      *mass, RooArgList(*bkg_a1,*bkg_a2,*bkg_a3));
+      RooGenericPdf *ErrPdf     = new  RooGenericPdf("ErrPdf","ErrPdf",
+ 						      "exp(-@0/decay)*(TMath::Erf((@0-turnOn)/width)+1)",
+ 						      RooArgList(*mass,turnOn,width,decay));
+      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("bkgPdf","total combined background pdf",
+ 						      RooArgList(*ChebPdf,*ErrPdf),
+ 						      RooArgList(*fPol));
       break;
-    case 6: // pol 3 to fit OS dirrectly
-      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("pdf_combinedbkgd","total combined background pdf",
-						      RooArgList(*bkgPdf),
-						      RooArgList(*nbkgd));
+    case 6: // pol 3 to fit OS dirrectly 
+	RooAbsPdf  *pdf_combinedbkgd  = new RooChebychev("bkgPdf","bkgPdf",
+ 					 *mass, RooArgList(*bkg_a1,*bkg_a2,*bkg_a3));
       break;
     default :
-      cout<<"Donno what you are talking about! Pick anothe fit option!"<<endl;
+      cout<<"Donno what you are talking about! Pick another fit option!"<<endl;
       break;
     }
   
@@ -566,10 +571,10 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
     }
   else 
     {
-      RooAbsPdf  *pdf             = new RooAddPdf ("pdf","total signal+background pdf",
+RooAbsPdf  *pdf             = new RooAddPdf ("pdf","total p.d.f.",
 						   RooArgList(*sig1S,*sig2S,*sig3S,*pdf_combinedbkgd),
-						   RooArgList(*nsig1f,*nsig2f,*nsig3f,*nbkgd));
-      fit_2nd       = pdf->fitTo(*data,Save(kTRUE),Extended(kTRUE),Minos(doMinos));
+ 						   RooArgList(*nsig1f,*nsig2f,*nsig3f,*nbkgd));
+      fit_2nd       = pdf->fitTo(*data,Save(kTRUE),Minos(doMinos));
     }
 
   // *************************************************** plotting
@@ -578,31 +583,44 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
   RooPlot* frame = mass->frame(Bins(nbins),Range(mass_l,mass_h));
  
   data->plotOn(frame,Name("theData"),MarkerSize(0.8));
-  pdf->plotOn(frame,Name("thePdf")); // signal + bkg pdf
-  // pdf->plotOn(frame,Name("thePdf"),VisualizeError(*fit_2nd,1),FillColor(kOrange)); /// change this, to see errrors
-  if (plotBkg) {
-    if (doTrkRot) TrkRotData->plotOn(frame,Name("TrkRotData"),MarkerSize(0.8),MarkerColor(kMagenta),MarkerStyle(22));
-    else likesignData->plotOn(frame,Name("theLikeSignData"),MarkerSize(0.8),MarkerColor(kRed),MarkerStyle(24));
-    
-  }
+   //pdf->plotOn(frame,Name("thePdf")); // signal + bkg pdf
+  pdf->plotOn(frame,Name("thePdf")); /// change this, to see errrors
   RooArgSet * pars = pdf->getParameters(data);
 
   //draw the fit lines and save plots
-  data->plotOn(frame,Name("theData"),MarkerSize(0.8));
-  pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),LineStyle(5),LineColor(kGreen));// polX bkg
-  pdf->plotOn(frame,Components("pdf_combinedbkgd"),LineStyle(kDashed));// total bkg, blue
-  if (plotBkg) 
-    {
-      if (doTrkRot && bkgdModel!=4 && bkgdModel!=6) pdf->plotOn(frame,Components("thisPdf"),Name("theLikeSign"),LineStyle(9),LineColor(kMagenta));// trk rot
-      else
-	{
-	  if(bkgdModel!=4 && bkgdModel!=6)
-	    {
-	      pdf->plotOn(frame,Components("thisPdf"),Name("theLikeSign"),LineStyle(9),LineColor(kRed)); // like sign component
-	      RooArgSet * pars = thisPdf->getParameters(likesignData);
-	    }
-	}
+    switch(bkgdModel){
+    case 1:
+      pdf->plotOn(frame,Components("ChebPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1),FillColor(kBlue));
+      pdf->plotOn(frame,Components("ErrPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1),FillColor(kOrange));// ErrFunction bkg
+      pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),LineStyle(kDashed));
+      RooArgSet * pars = ErrPdf->getParameters(likesignData);
+      break;
+    case 2:
+      pdf->plotOn(frame,Components("ChebPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1),FillColor(kBlue));
+      pdf->plotOn(frame,Components("KeysPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1),FillColor(kOrange));// ErrFunction bk
+      RooArgSet * pars = KeysPdf->getParameters(likesignData);
+      pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),LineStyle(kDashed));
+      break;
+    case 3:
+      pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1),LineStyle(kDashed));
+      pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),LineStyle(kDashed));
+      break;
+    case 4:
+      pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1));
+      pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),LineStyle(kDashed));
+      break;
+    case 5:
+      pdf->plotOn(frame,Components("ChebPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1),FillColor(kBlue));
+      pdf->plotOn(frame,Components("ErrPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1),FillColor(kOrange));// ErrFunction bk
+      pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),LineStyle(kDashed));
+      break;
+    case 6:
+      pdf->plotOn(frame,Components("bkgPdf"),Name("theBkg"),VisualizeError(*fit_2nd,1));
+      break;
+    default:
+      break;
     }
+  //pdf->plotOn(frame,Components("pdf_combinedbkgd"),Name("theBkg"),LineStyle(kDashed));// total bkg, blue
   // need this re-plotting, so the pulls pick the right fit
   pdf->plotOn(frame,Name("thePdf")); // signal + bkg pdf
   //----------------------------------------------------------------------  
