@@ -297,7 +297,7 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
   RooFormulaVar *mean3S = new RooFormulaVar("mean3S","@0*@1", RooArgList(*mean,*rat3));
 
   //detector resolution
-  RooRealVar    *sigma1  = new RooRealVar("sigma1","#sigma_{1S}",0.0920.045,0.3); //  MC 5tev 1S pol2 
+  RooRealVar    *sigma1  = new RooRealVar("sigma1","#sigma_{1S}",0.092,0.045,0.3); //  MC 5tev 1S pol2 
   RooFormulaVar *sigma1S = new RooFormulaVar("sigma1S","@0"   ,RooArgList(*sigma1));
   RooFormulaVar *sigma2S = new RooFormulaVar("sigma2S","@0*@1",RooArgList(*sigma1,*rat2));
   RooFormulaVar *sigma3S = new RooFormulaVar("sigma3S","@0*@1",RooArgList(*sigma1,*rat3));
@@ -358,7 +358,7 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
   // relative fraction of the two Gaussians components for each CB
   RooRealVar *sigmaFraction = new RooRealVar("sigmaFraction","Sigma Fraction",0.3,0.,1.);
   sigmaFraction->setVal(0);
-  sigmaFraction->setConstant(kTRUE);
+  // sigmaFraction->setConstant(kTRUE);
   
   /// Upsilon 1S
   RooCBShape  *cb1S_1    = new RooCBShape ("cb1S_1", "FSR cb 1s",
@@ -373,7 +373,7 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
   RooCBShape  *cb2S_1    = new RooCBShape ("cb2S_1", "FSR cb 2s", 
  					   *mass,*mean2S,*sigma1,*alpha,*npow); 
   RooCBShape  *cb2S_2    = new RooCBShape ("cb2S_2", "FSR cb 2s", 
- 					   *mass,*mean2S,*sigma2S,*alpha,*npow); 
+ 					   *mass,*mean3S,*sigma3S,*alpha,*npow); 
   RooAddPdf      *sig2S  = new RooAddPdf  ("sig2S","2S mass pdf",
  					   RooArgList(*cb2S_1,*cb2S_2),*sigmaFraction);
   
@@ -388,11 +388,22 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
   // *************************************************** free param in the fit
   int nt = 10000;
   RooRealVar *nsig1f   = new RooRealVar("N_{#Upsilon(1S)}","nsig1S",nt*0.25,0,10*nt);
+
+  // RooRealVar *f2Svs1S = new RooRealVar("N_{2S}/N_{1S}","f2Svs1S",0.21,-0.1,1);
+  // //RooRealVar *f3Svs1S = new RooRealVar("N_{3S}/N_{1S}","f3Svs1S",0.0,-0.1,0.5);
+  // RooRealVar *f23vs1S = new RooRealVar("N_{2S+3S}/N_{1S}","f23vs1S",0.45,-0.1,1);
+  // RooFormulaVar *nsig2f = new RooFormulaVar("nsig2S","@0*@1", RooArgList(*nsig1f,*f2Svs1S));
+  // //RooFormulaVar *nsig3f = new RooFormulaVar("nsig3S","@0*@1", RooArgList(*nsig1f,*f3Svs1S));
+  // RooFormulaVar *nsig3f = new RooFormulaVar("nsig3S","@0*@2-@0*@1", RooArgList(*nsig1f,*f2Svs1S,*f23vs1S));
+
   switch (choseFitParams)
     {
-    case 0://use the YIELDs of 2S and 3S as free parameters 
-      RooRealVar *nsig2f  = new RooRealVar("N_{#Upsilon(2S)}","fsig2S",   nt*0.25,-1*nt,10*nt);
-      RooRealVar *nsig3f  = new RooRealVar("N_{#Upsilon(3S)}","fsig3S",   nt*0.25,-1*nt,10*nt);
+    case 0://use the YIELDs of 2S and 3S as free parameters
+      RooRealVar *nsig2f  = new RooRealVar("N_{#Upsilon(2S+3S)}","fsig2S",   nt*0.25,-1*nt,10*nt); 
+      // RooRealVar *nsig3f  = new RooRealVar("N_{#Upsilon(3S)}","fsig3S",   nt*0.25,-1*nt,10*nt);
+     
+
+      // RooFormulaVar *nsig3f70_100 = new RooFormulaVar("N_{#Upsilon(2S+3S)}","@0-@1",RooArgList(*nsig1f,*nsig2f));
       break;
     case 1:  //use the RATIOs of 2S and 3S as free parameters 
       RooRealVar *f2Svs1S   = new RooRealVar("R_{#frac{2S}{1S}}","f2Svs1S",-0.1,1.0);
@@ -405,17 +416,17 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
     case 2:// do (2s+3s)/1s
       RooRealVar *f2Svs1S   = new RooRealVar("R_{#frac{2S}{1S}}","f2Svs1S",0.26,-0.1,1.0);
       RooRealVar *f23vs1S   = new RooRealVar("R_{#frac{2S+3S}{1S}}","f23vs1S",0.45,-0.1,1);
-      RooFormulaVar *fsig2f = new RooFormulaVar("N2S","@0*@1", RooArgList(*fsig1S,*f2Svs1S));
-      RooFormulaVar *fsig3f = new RooFormulaVar("N3S","@0*@2-@0*@1", 
+      RooFormulaVar *nsig2f = new RooFormulaVar("N2S","@0*@1", RooArgList(*fsig1S,*f2Svs1S));
+      RooFormulaVar *nsig3f = new RooFormulaVar("N3S","@0*@2-@0*@1", 
  						RooArgList(*fsig1S,*f2Svs1S,*f23vs1S));
       break;
     case 3://do 2s/1s, 3s/1s, 3s/2s
       RooRealVar *f2Svs1S   = new RooRealVar("R_{#frac{2S}{1S}}","f2Svs1S",0.26,-0.1,1.0);
       RooRealVar *f3Svs1S   = new RooRealVar("R_{#frac{3S}{1S}}","f3Svs1S",0.13,-0.1,1.0);
-      RooFormulaVar *fsig2f = new RooFormulaVar("N2S","@0*@1", RooArgList(*fsig1S,*f2Svs1S));
+      RooFormulaVar *nsig2f = new RooFormulaVar("N2S","@0*@1", RooArgList(*fsig1S,*f2Svs1S));
       //   RooFormulaVar *fsig3f = new RooFormulaVar("N3S","@0*@1", RooArgList(*fsig1S,*f3Svs1S));
       RooRealVar *f3Svs2S = new RooRealVar("R_{#frac{3S}{2S}}","f3Svs2S",0.5,-1,1);
-      RooFormulaVar *fsig3f= new RooFormulaVar("N32S","@0/@1",RooArgList(*f3Svs1S,*f2Svs1S));
+      RooFormulaVar *nsig3f= new RooFormulaVar("N32S","@0/@1",RooArgList(*f3Svs1S,*f2Svs1S));
       f2Svs1S->setConstant(kFALSE);
       f3Svs1S->setConstant(kFALSE);
       break;
@@ -424,9 +435,10 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
       break;
 
     }  
-
+ double NEvts;
+ NEvts = data->sumEntries());
   // bkg Chebychev
-  RooRealVar *nbkgd   = new RooRealVar("n_{Bkgd}","nbkgd",0,10*nt);
+  RooRealVar *nbkgd   = new RooRealVar("n_{Bkgd}","nbkgd",0,NEvts);
   RooRealVar *bkg_a1  = new RooRealVar("a1_{bkg}", "bkg_{a1}", 0, -2, 2);
   RooRealVar *bkg_a2  = new RooRealVar("a2_{bkg}", "bkg_{a2}", 0, -2, 2);
   RooRealVar *bkg_a3  = new RooRealVar("a3_{bkg}", "bkg_{a3}", 0, -1, 1);
@@ -580,8 +592,8 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
       // 						   RooArgList(*sig1S,*sig2S,*sig3S,*pdf_combinedbkgd),
       // 						   RooArgList(*nsig1f,*nsig2f,*nsig3f,*nbkgd));
       RooAbsPdf  *pdf             = new RooAddPdf ("pdf","total p.d.f.",
-						   RooArgList(*sig1S,*sig2S,*sig3S,*pdf_combinedbkgd),
- 						   RooArgList(*nsig1f,*nsig2f,*nsig3f,*nbkgd));
+						   RooArgList(*sig1S,*sig2S,*pdf_combinedbkgd),
+ 						   RooArgList(*nsig1f,*nsig2f,*nbkgd));
       fit_2nd       = pdf->fitTo(*data,Save(kTRUE),Minos(doMinos));
     }
 
@@ -790,7 +802,7 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
   // outfileFitResults <<endl;
  switch(choseFitParams) {
   case 0:
-    outfileFitResults<<figName_<<" "<<nsig1f->getVal()<<" "<<nsig1f->getError()<<" "<<nsig2f->getVal()<<" "<<nsig2f->getError()<<" "<<nsig3f->getVal()<<" "<<nsig3f->getError()<<" "<<npow->getVal()<<" "<<npow->getError()<<" "<<alpha->getVal()<<" "<<alpha->getError()<<" "<<sigma1->getVal()<<" "<<sigma1->getError()<<" "<<2*nFitParam+2*baseNll<<" "<<fit_2nd->edm()<<" "<<UnNormChi2<<" "<<UnNormChi2/Dof<<" "<<TMath::Prob(UnNormChi2,Dof)<<" "<<Dof<<" "<<nFitParam<<" "<<baseNll<< endl;
+    outfileFitResults<<figName_<<" "<<nsig1f->getVal()<<" "<<nsig1f->getError()<<" "<<nsig2f->getVal()<<" "<<nsig2f->getError()<<" "/*<<nsig23f->getVal()<<" "<<nsig23f->getError()<<*/" "<<npow->getVal()<<" "<<npow->getError()<<" "<<alpha->getVal()<<" "<<alpha->getError()<<" "<<sigma1->getVal()<<" "<<sigma1->getError()<<" "<<2*nFitParam+2*baseNll<<" "<<fit_2nd->edm()<<" "<<UnNormChi2<<" "<<UnNormChi2/Dof<<" "<<TMath::Prob(UnNormChi2,Dof)<<" "<<Dof<<" "<<nFitParam<<" "<<baseNll<< endl;
     break;
   case 1 :
  
