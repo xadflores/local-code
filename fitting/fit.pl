@@ -56,16 +56,16 @@ my $refend    = 3;
 #0: free; 1: both fixed 2: alpha fixed 3: npow fixed 
 # keep in mind the shape parameters might not be the same for all bins... stick to the usual n=2.3 for convenience, for now.
 my @fsr     = ("0","1","2","3");
-my $fsrstart = 2;
+my $fsrstart = 3;
 my $fsrend   = 3;
 
-my $centstart =1 ;
-my $centend   =13 ;
+my $centstart =0 ;
+my $centend   =0 ;
 #my @centrality_min = ("0","4", "8", "0", "50", "20","0");
 #my @centrality_max = ("4","8", "24", "8","100", "40","0");
 # ----------------------0----1---2---3----4----5----6----7---8---9---10---11--12---13--; 0->7 1S binning, 8->11 2S binning, n>11 for trials
- my @centrality_min = ("0", "0","2","4", "8","12","16","24","0","4", "8","0","16","28"); 
- my @centrality_max = ("40","2","4","8","12","16","24","40","4","8","24","8","28","40");
+ my @centrality_min = ("0", "0","2","4", "8","12","16","20","0","4", "8","0","16","28"); 
+ my @centrality_max = ("40","2","4","8","12","16","20","28","4","8","40","8","28","40");
 # 0-5 | 5-10 | 10-20 | 20-30 | 30-40 | 40-50(60) | 50(60)-100 | 0-20 | 20-90(alice comparisons)
 
 my $modelstart =1;
@@ -89,19 +89,20 @@ my $isam;
 
 # my @rapBinMin = ("-2.4","-1.6","-0.8","0","0.8","1.6");
 # my @rapBinMax = ("-1.6","-0.8","0","0.8","1.6","2.4");
-# rapidity binning suited for PbPb 1S (0->4), 2S (5->7);
-my @rapBinMin = ("0.","0.4","0.7","1.0","1.5","0.","1.2","0.");
+
+# ----------------0----1-------2------3----4-----5-----6-----7--# rapidity binning suited for PbPb 1S (0->4), 2S (5->7);
+my @rapBinMin = ("0.","0.4" ,"0.7","1.0","1.5","0." ,"1.2","0.");
 my @rapBinMax = ("0.4","0.7","1.0","1.5","2.4","1.2","2.4","2.4");
 
 
 # pT binning for 2S:
 #my @upsPtBinMin = ("0","6.5","10","0");	 
 #my @upsPtBinMax = ("6.5","10","20","20");
-# pT binning for 1S (0->5), 2S (6->9);
-my @upsPtBinMin = ("0","2.5","5","8","12","20","0","6.5","10","0");	 
-my @upsPtBinMax = ("2.5","5","8","12","20","150","6.5","10","20","20");
-my $dontDoRapNow =1;
-my $dontDoPtNow =1;
+# ------------------0-----1-----2---3----4----5-----6-----7------8---9## pT binning for 1S (0->5), 2S (6->9);
+my @upsPtBinMin = ("0"  ,"2.5","5","8" ,"12","20" ,"0"  ,"6.5","10","0");	 
+my @upsPtBinMax = ("2.5","5" , "8","12","20","150","6.5","10","20","20");
+my $dontDoRapNow =0;
+my $dontDoPtNow =0;
 #loops for mkdir purposes
 for (my $ivProb=$vProbStart; $ivProb<=$vProbEnd; $ivProb++)
 {
@@ -159,7 +160,7 @@ for( my $icent=$centstart; $icent <=$centend; $icent++)
 			    
 			    for ( my $ibkg=$modelstart; $ibkg<=$modelend; $ibkg++)
 			    {
-				next if(($dontDoRapNow==1 && $dontDoPtNow==0)||($dontDoRapNow==0 && $dontDoPtNow==1));
+				next if(($dontDoRapNow==1 && $dontDoPtNow==0)||($dontDoRapNow==0 && $dontDoPtNow==1) || (($dontDoRapNow==0 && $dontDoPtNow==0)));
 				my $centMin = $centrality_min[$icent];
 				my $centMax = $centrality_max[$icent];
 				my $myfsr   = $fsr[$ifsr];
@@ -230,7 +231,8 @@ for ( $isam=$samstart; $isam<=$samend; $isam++)
 			for(my $iRap=0; $iRap<=7; $iRap++){ #hardcoded... so what?
 			    $dimuYMin=$rapBinMin[$iRap];
 			    $dimuYMax=$rapBinMax[$iRap];
-			   
+			    $upsPtCutMin    = 0;
+			    $upsPtCutMax    = 150; #used when not binning in pT
 			    next if($dontDoRapNow==1);
 			    for ( my $ibkg=$modelstart; $ibkg<=$modelend; $ibkg++)
 			    {
