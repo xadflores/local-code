@@ -302,14 +302,14 @@ void fitUpsilonYields_Yvariant(int choseSample    = 3, //Input data sample.  1: 
   RooFormulaVar *mean3S = new RooFormulaVar("mean3S","@0*@1", RooArgList(*mean,*rat3));
 
   //detector resolution
-  RooRealVar    *sigma1  = new RooRealVar("sigma1","#sigma_{1S}",0.0623,0.01,0.4); //  MC 5tev 1S pol2 
+  RooRealVar    *sigma1  = new RooRealVar("sigma1","#sigma_{1S}",0.092,0.045,0.3); //  MC 5tev 1S pol2 
   RooFormulaVar *sigma1S = new RooFormulaVar("sigma1S","@0"   ,RooArgList(*sigma1));
   RooFormulaVar *sigma2S = new RooFormulaVar("sigma2S","@0*@1",RooArgList(*sigma1,*rat2));
   RooFormulaVar *sigma3S = new RooFormulaVar("sigma3S","@0*@1",RooArgList(*sigma1,*rat3));
   
   /// to describe final state radiation tail on the left of the peaks
-  RooRealVar *alpha  = new RooRealVar("alpha","tail shift",1.78,0.4,20);    // MC 5tev 1S pol2 
-  RooRealVar *npow   = new RooRealVar("npow","power order",1.52,1,100);    // MC 5tev 1S pol2 
+  RooRealVar *alpha  = new RooRealVar("alpha","tail shift",0.1,40);    // MC 5tev 1S pol2 
+  RooRealVar *npow   = new RooRealVar("npow","power order",1.000001,100);    // MC 5tev 1S pol2 
 
   // ratios fit paramters:1 (pp@7.tev), 2 (pp@2.76TeV), 3(PbPb 2.76TeV)
   //no. all values except last column come from AN2011-455-v9
@@ -318,7 +318,7 @@ void fitUpsilonYields_Yvariant(int choseSample    = 3, //Input data sample.  1: 
   // col.3 = MC from 2013 vineet
   double alpha_mc[7]   = {0, 1.67 , 0.98 , 1.626};//
   double npow_mc[7]    = {0, 2.3  , 2.3  , 2.3};// 
-  double sigma1_mc[7]  = {0, 0.090, 0.078,0.06506};// 
+  double sigma1_mc[7]  = {0, 0.092, 0.078,0.092};// 0.06506
 
   alpha->setVal(alpha_mc[useRef]);
   npow->setVal(npow_mc[useRef]);
@@ -429,12 +429,13 @@ void fitUpsilonYields_Yvariant(int choseSample    = 3, //Input data sample.  1: 
       break;
 
     }  
-
+ double NEvts;
+ NEvts = data->sumEntries());
   // bkg Chebychev
-  RooRealVar *nbkgd   = new RooRealVar("nBkgd","nbkgd",nt*0.75,-100,10*nt);
+RooRealVar *nbkgd   = new RooRealVar("nBkgd","nbkgd",0,NEvts);
   RooRealVar *bkg_a1  = new RooRealVar("a1_bkg", "bkg_{a1}", 0, -2, 2);
   RooRealVar *bkg_a2  = new RooRealVar("a2_Bkg", "bkg_{a2}", 0, -2, 2);
-  RooRealVar *bkg_a3  = new RooRealVar("a3_Bkg", "bkg_{a3}", 0, -0.5, 2);
+  RooRealVar *bkg_a3  = new RooRealVar("a3_Bkg", "bkg_{a3}", 0, -0.9, 2);
 
   //  likesign
   RooRealVar *nLikesignbkgd = new RooRealVar("NLikesignBkg","nlikesignbkgd",nt*0.75,0,10*nt);
@@ -464,9 +465,9 @@ void fitUpsilonYields_Yvariant(int choseSample    = 3, //Input data sample.  1: 
  
 
  // *************************************************** bkgModel
-  RooRealVar turnOn("turnOn","turnOn", 6., 0., 13.);
-  RooRealVar width("width","width", 4.1,2.3, 20.);// MB 2.63
-  RooRealVar decay("decay","decay", 3.5, 1, 100.);// MB: 3.39
+  RooRealVar turnOn("turnOn","turnOn", 7.,14.);
+  RooRealVar width("width","width",0.5, 20.);// MB 2.63
+  RooRealVar decay("decay","decay",0, 10.);// MB: 3.39
 
   width.setConstant(false);
   decay.setConstant(false);
