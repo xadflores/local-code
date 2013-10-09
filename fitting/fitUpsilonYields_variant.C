@@ -43,7 +43,7 @@
 #include <fstream>
 #include <iostream>
 
-double mass_l =  8.0;
+double mass_l =  7.0;
 double mass_h = 14.0;
 double binw   = 0.1;    //bin width of the histogram
 
@@ -62,9 +62,9 @@ const char* choseSampleLumi[nData] = {"",
 				      "L_{int} = 966 pb^{-1}",
 				      "L_{int} = 150 \mub^{-1}",
 				      "L_{int} = xxx \mub^{-1}",
-				      "L_{int} = xxx \mub^{-1}",
+				      "L{int} = xxx \mub^{-1}",
 				      "L_{int} = 150 \mub^{-1}",
-			      "L_{int} = 5.41 pb^{-1}"
+				      "L_{int} = 5.41 pb^{-1}"
 };
 
 // -------- make some local picks
@@ -79,33 +79,34 @@ pair<double, double> ConfidencInterval(float, RooRealVar *fnll, RooDataSet *data
 //the reason for this is the number of arguments one can append to RooDataSet (max. is 8)
 //
 void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: pp@7TeV data ; 2: pp@2.76TeV; 3: PbPb@276
-		      int choseFitParams = 2, //0: (1s, 2s, 3s) 1: (1s, 2s/1s; 3s/1s); 2: (1S, (2s+3s)/1s)
-		      int bkgdModel      = 3, //1:LS erf*exp + pol2; 2:LS RookeyPdf + pol2; 3:erf*exp; 4:pol2; 5:erf*exp+pol2 6:pol3
-		      int fixFSR         = 1,
-		      int fixSigma1      = 0, // 0 free; 1: fix
-		      int centralityMin = 20,
-		      int centralityMax = 40,
-		      float muonEtaMin  = -1.,
-		      float muonEtaMax  = 1, 
-		      float dimuPtMin    = -1., 
-		      float dimuPtMax    = 1.,
-		      double muonpTcut  = 4, //single muon pT cut
-		      bool plotBkg      = 0, //0: hide LS or trkRot; 1: plot LS or trkRot data points and fit lines;
-		      bool doTrkRot     = 0, //0: use LS;   1: use track rotation
-		      bool doConstrainFit   = 0,  //1: use constrain method
-		      int useRef            = 1, // # 0 none 1: MC, 2: MB
-		      bool plotpars         = 1, //1: plot parameters;   0: plot CMS label
-		      const char* choseSampleCase = "regit", //
-		      const char* outFigsDir      = "pdfOutput/",// figs dir outfile location
-		      TString outDatsDir          = "txtOutput",// dats dir outfile location
-		      const char* outFilePrefix   = "ratios", // yields, ratios
-		      bool narrowMass             = false,
-		      float vProbPick = 0.01
-			 )
+			      int choseFitParams = 2, //0: (1s, 2s, 3s) 1: (1s, 2s/1s; 3s/1s); 2: (1S, (2s+3s)/1s)
+			      int bkgdModel      = 3, //1:LS erf*exp + pol2; 2:LS RookeyPdf + pol2; 3:erf*exp; 4:pol2; 5:erf*exp+pol2 6:pol3
+			      int fixFSR         = 1,
+			      int fixSigma1      = 0, // 0 free; 1: fix
+			      int centralityMin = 20,
+			      int centralityMax = 40,
+			      float muonEtaMin  = -1.,
+			      float muonEtaMax  = 1, 
+			      float dimuPtMin    = -1., 
+			      float dimuPtMax    = 1.,
+			      double muonpTcut  = 4, //single muon pT cut
+			      bool plotBkg      = 0, //0: hide LS or trkRot; 1: plot LS or trkRot data points and fit lines;
+			      bool doTrkRot     = 0, //0: use LS;   1: use track rotation
+			      bool doConstrainFit   = 0,  //1: use constrain method
+			      int useRef            = 1, // # 0 none 1: MC, 2: MB
+			      bool plotpars         = 1, //1: plot parameters;   0: plot CMS label
+			      const char* choseSampleCase = "regit", //
+			      const char* outFigsDir      = "pdfOutput/",// figs dir outfile location
+			      TString outDatsDir          = "txtOutput",// dats dir outfile location
+			      const char* outFilePrefix   = "ratios", // yields, ratios
+			      bool narrowMass             = false,
+			      float vProbPick = 0.01
+			      )
 {
   // gROOT->Macro("/Users/eusmartass/Software/utilities/setStyle.C+");
   gROOT->Macro("cm/logon.C+");
 
+  if (dimuPtMax<=3.5) mass_l = 8.0;
   // input file
   TString finput;
   switch (choseSample) 
@@ -123,9 +124,9 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
       binw=0.05;
       break;
     case 3://PbPb @ 2.76TeV regit
-      //finput   = "../dimuonTree_upsiMiniTree_aa276tev_regitreco_glbglb_Runa_trigBit1_allTriggers0_pt4.root"; // cent 0-40 "cm"
+      finput   = "../dimuonTree_upsiMiniTree_aa276tev_regitreco_glbglb_Runa_trigBit1_allTriggers0_pt4.root"; // cent 0-40 "cm"
       // finput = "../dimuonTree_upsiMiniTree_AA2p76tev_ptmu3_july09_Run2011-2011_trigBit1_allTriggers0.root";// cent0-40 "td"
-       finput = "../dimuonTree_upsiMiniTree_AA276tevC0100_regit_ptmu4_Run210498-211631_trigBit1_allTriggers0.root"; // cent0-40 "nf"
+      // finput = "../dimuonTree_upsiMiniTree_AA276tevC0100_regit_ptmu4_Run210498-211631_trigBit1_allTriggers0.root"; // cent0-40 "nf"
       break;
     case 4://PbPb @ 2.76TeV pp reco trk-trk
       // finput   = "../dimuonTree_upsiMiniTree_aa276tev_50100ppreco__Runa_trigBit1_allTriggers0_pt4.root";
@@ -145,7 +146,7 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
     default:
       cout<<"You don't know what you are doing! Pick one of the available datasets in the choseSampleCases[] array"<<endl;
       break;
-   }
+    }
   // when no ref is specified, then do free fit
   if(useRef==0)// no reference
     {
@@ -154,20 +155,20 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
     }
 
   // output setting files:
-   TString figsDir(Form("%s",outFigsDir)); //output fig location
+  TString figsDir(Form("%s",outFigsDir)); //output fig location
   
   // if param are on, this gets filled in the naming
   TString paramOn_("");
-
+  
   // kinematic cuts:
   double muonEtaCut_min = muonEtaMin;
   double muonEtaCut_max = muonEtaMax; 
   double upsYCut_min    = -2.4;
   double upsYCut_max    = 2.4;
- 
+  
   int centrality_max = centralityMax; 
   int centrality_min = centralityMin; 
-
+  
   TString cut_ap(Form("(%d<=Centrality && Centrality<%d) && (%.2f<muPlusEta && muPlusEta < %.2f) && (%.2f<muMinusEta && muMinusEta < %.2f) && (%.2f<upsPt && upsPt<%.2f) && vProb > %.2f",centrality_min,centrality_max,muonEtaCut_min,muonEtaCut_max,muonEtaCut_min,muonEtaCut_max,dimuPtMin,dimuPtMax,vProbPick));
  
   int centMin = centrality_min;
@@ -177,9 +178,9 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
       centMin = (int)(centrality_min*2.5);
       centMax = (int)(centrality_max*2.5);
     }
-    TString figName_(Form("%s_%s_cent%d-%d_bkgModel%d_muonEta%.2f%.2f_dimuPt%.2f%.2f_trkRot%d_constrain%d_fsr%d_sigma%d_ref%d",
-			  outFilePrefix,choseSampleCase,centMin,centMax,
-			  bkgdModel, muonEtaCut_min,muonEtaCut_max,dimuPtMin,dimuPtMax,doTrkRot,doConstrainFit,fixFSR,fixSigma1,useRef));
+  TString figName_(Form("%s_%s_cent%d-%d_bkgModel%d_muonEta%.2f%.2f_dimuPt%.2f%.2f_trkRot%d_constrain%d_fsr%d_sigma%d_ref%d",
+			outFilePrefix,choseSampleCase,centMin,centMax,
+			bkgdModel, muonEtaCut_min,muonEtaCut_max,dimuPtMin,dimuPtMax,doTrkRot,doConstrainFit,fixFSR,fixSigma1,useRef));
 
   // output file names
   if(narrowMass)
@@ -292,15 +293,15 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
   RooFormulaVar *mean2S = new RooFormulaVar("mean2S","@0*@1", RooArgList(*mean,*rat2));
   RooFormulaVar *mean3S = new RooFormulaVar("mean3S","@0*@1", RooArgList(*mean,*rat3));
 
- //detector resolution ?? where is this coming from?
-  RooRealVar    *sigma1  = new RooRealVar("sigma1","#sigma_{1S}",0.0623,0.01,0.9); //  MC 5tev 1S pol2 
+  //detector resolution ?? where is this coming from?
+  RooRealVar    *sigma1  = new RooRealVar("sigma1","#sigma_{1S}",0.092,0.045,0.3); // 
   RooFormulaVar *sigma1S = new RooFormulaVar("sigma1S","@0"   ,RooArgList(*sigma1));
   RooFormulaVar *sigma2S = new RooFormulaVar("sigma2S","@0*@1",RooArgList(*sigma1,*rat2));
   RooFormulaVar *sigma3S = new RooFormulaVar("sigma3S","@0*@1",RooArgList(*sigma1,*rat3));
   
   /// to describe final state radiation tail on the left of the peaks
-  RooRealVar *alpha  = new RooRealVar("alpha","tail shift",1.78,0.5,40);    // MC 5tev 1S pol2 
-  RooRealVar *npow   = new RooRealVar("npow","power order",1.52,1,100);    // MC 5tev 1S pol2 
+  RooRealVar *alpha  = new RooRealVar("alpha","tail shift",0.1,40);    // MC 5tev 1S pol2 
+  RooRealVar *npow   = new RooRealVar("npow","power order",1.0000001,100);    // MC 5tev 1S pol2 
 
   // ratios fit paramters:1 (pp@7.tev), 2 (pp@2.76TeV), 3(PbPb 2.76TeV)
   //no. all values except last column come from AN2011-455-v9
@@ -309,7 +310,7 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
   // col.3 = MC from 2013 vineet
   double alpha_mc[7]   = {0, 1.67 , 0.98 , 1.626};//
   double npow_mc[7]    = {0, 2.3  , 2.3  , 2.3};// 
-  double sigma1_mc[7]  = {0, 0.090, 0.078,0.06506};// 
+  double sigma1_mc[7]  = {0, 0.092, 0.078,0.092};// 0.06506 
 
   alpha->setVal(alpha_mc[useRef]);
   npow->setVal(npow_mc[useRef]);
@@ -381,8 +382,9 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
   RooAddPdf      *sig3S  = new RooAddPdf  ("sig3S","3S mass pdf",
 					   RooArgList(*cb3S_1,*cb3S_2),*sigmaFraction); // = cb3S1*sigmaFrac + cb3S2*(1-sigmaFrac)
   
+
   // *************************************************** free param in the fit
-  int nt = 100000;
+  int nt = 10000;
   RooRealVar *nsig1f   = new RooRealVar("N_{#Upsilon(1S)}","nsig1S",nt*0.25,0,10*nt);
   switch (choseFitParams)
     {
@@ -418,143 +420,143 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
     default:
       cout<<"Make a pick from choseFitParams!!!"<<endl;
       break;
-
     }  
-
+ double NEvts;
+ NEvts = data->sumEntries());
   // bkg Chebychev
-  RooRealVar *nbkgd   = new RooRealVar("nBkgd","nbkgd",nt*0.75,-100,10*nt);
+  RooRealVar *nbkgd   = new RooRealVar("n_{Bkgd}","nbkgd",0,NEvts);
   RooRealVar *bkg_a1  = new RooRealVar("a1_bkg", "bkg_{a1}", 0, -5, 5);
   RooRealVar *bkg_a2  = new RooRealVar("a2_Bkg", "bkg_{a2}", 0, -5, 5);
-  RooRealVar *bkg_a3  = new RooRealVar("a3_Bkg", "bkg_{a3}", 0, -0.5, 2);
+  RooRealVar *bkg_a3  = new RooRealVar("a3_Bkg", "bkg_{a3}", 0, -0.9, 2);
 
 
-  //  likesign
-  RooRealVar *nLikesignbkgd = new RooRealVar("NLikesignBkg","nlikesignbkgd",nt*0.75,0,10*nt);
-  if (doTrkRot) 
-    {
-      nLikesignbkgd->setVal(TrkRotData->sumEntries());
-      nLikesignbkgd->setError(sqrt(TrkRotData->sumEntries()));
-    }
-  else 
-    {
-      nLikesignbkgd->setVal(likesignData->sumEntries());
-      nLikesignbkgd->setError(sqrt(likesignData->sumEntries()));
-    }
-  // nbkgd->setVal(data0->sumEntries());
-  // nbkgd->setError(sqrt(data0->sumEntries()));
-  if (doConstrainFit) 
-    {
-      RooGaussian* nLikesignbkgd_constr = new RooGaussian("nLikesignbkgd_constr","nLikesignbkgd_constr",
-							  *nLikesignbkgd,
-							  RooConst(nLikesignbkgd->getVal()),    //mean
-							  RooConst(nLikesignbkgd->getError())); //sigma
-    }
-  else nLikesignbkgd->setConstant(kTRUE);
-  
-  RooFormulaVar *nResidualbkgd = new RooFormulaVar("NResidualBkg","@0-@1",
-						   RooArgList(*nbkgd,*nLikesignbkgd));
+//  likesign
+RooRealVar *nLikesignbkgd = new RooRealVar("NLikesignBkg","nlikesignbkgd",nt*0.75,0,10*nt);
+if (doTrkRot) 
+  {
+    nLikesignbkgd->setVal(TrkRotData->sumEntries());
+    nLikesignbkgd->setError(sqrt(TrkRotData->sumEntries()));
+  }
+ else 
+   {
+     nLikesignbkgd->setVal(likesignData->sumEntries());
+     nLikesignbkgd->setError(sqrt(likesignData->sumEntries()));
+   }
+// nbkgd->setVal(data0->sumEntries());
+// nbkgd->setError(sqrt(data0->sumEntries()));
+if (doConstrainFit) 
+  {
+    RooGaussian* nLikesignbkgd_constr = new RooGaussian("nLikesignbkgd_constr","nLikesignbkgd_constr",
+							*nLikesignbkgd,
+							RooConst(nLikesignbkgd->getVal()),    //mean
+							RooConst(nLikesignbkgd->getError())); //sigma
+  }
+ else nLikesignbkgd->setConstant(kTRUE);
+
+RooFormulaVar *nResidualbkgd = new RooFormulaVar("NResidualBkg","@0-@1",
+						 RooArgList(*nbkgd,*nLikesignbkgd));
  
 
- // *************************************************** bkgModel
-  RooRealVar turnOn("turnOn","turnOn", 6., 0., 12.);
-  RooRealVar width("width","width", 2.63.,0.8 , 100.);// MB 2.63
-  RooRealVar decay("decay","decay", 3.5, 1, 100.);// MB: 3.39
+// *************************************************** bkgModel
+RooRealVar turnOn("turnOn","turnOn" , 7., 14.);
+RooRealVar width("width","width"    , 0.5,20.);// MB 2.63
+RooRealVar decay("decay","decay"    , 0., 10.);// MB: 3.39
 
-  width.setConstant(false);
-  decay.setConstant(false);
-  turnOn.setConstant(false);
+width.setConstant(false);
+decay.setConstant(false);
+turnOn.setConstant(false);
 
-  RooGaussian* turnOn_constr;
-  RooGaussian* width_constr;
-  RooGaussian* decay_constr;
+RooGaussian* turnOn_constr;
+RooGaussian* width_constr;
+RooGaussian* decay_constr;
 
-  //thisPdf: form of the bkg pdf
-  //pdf_combinedbkgd; // total bkg pdf. usually form*normalization
-    switch (bkgdModel) 
-    {
-    case 1 :  //(erf*exp ) to fit the SS, then fix the shape and fit OS, in case of constrain option
-      bkg_a3->setConstant(true);
-      RooGenericPdf *ErrPdf = new  RooGenericPdf("ErrPdf","ErrPdf",
- 						  "exp(-@0/decay)*(TMath::Erf((@0-turnOn)/width)+1)",
- 						  RooArgList(*mass,turnOn,width,decay));
-      RooFitResult* fit_1st  = ErrPdf->fitTo(*likesignData,Save(),NumCPU(4)) ; // likesign data
-      if (doTrkRot) fit_1st  = thisPdf->fitTo(*TrkRotData,Save(),NumCPU(4)) ;
+//thisPdf: form of the bkg pdf
+//pdf_combinedbkgd; // total bkg pdf. usually form*normalization  (so that you can do extended ML fits)
+switch (bkgdModel) 
+  {
+  case 1 :  //(erf*exp ) to fit the SS, then fix the shape and fit OS, in case of constrain option
+    bkg_a3->setConstant(true);
+    RooGenericPdf *ErrPdf = new  RooGenericPdf("ErrPdf","ErrPdf",
+					       "exp(-@0/decay)*(TMath::Erf((@0-turnOn)/width)+1)",
+					       RooArgList(*mass,turnOn,width,decay));
+    RooFitResult* fit_1st  = ErrPdf->fitTo(*likesignData,Save(),NumCPU(4)) ; // likesign data
+    if (doTrkRot) fit_1st  = thisPdf->fitTo(*TrkRotData,Save(),NumCPU(4)) ;
         
-      if (doConstrainFit) 
- 	{ // allow parameters to vary within cenral value from above fit + their sigma
- 	  turnOn_constr = new RooGaussian("turnOn_constr","turnOn_constr",
- 					   turnOn,
- 					   RooConst(turnOn.getVal()),
- 					   RooConst(turnOn.getError()));
- 	  width_constr   = new RooGaussian("width_constr","width_constr",
- 					   width,					   RooConst(width.getVal()),
- 					   RooConst(width.getError()));
- 	  decay_constr    = new RooGaussian("decay_constr","decay_constr",
- 					   decay,
- 					   RooConst(decay.getVal()),
- 					   RooConst(decay.getError()));
- 	}
-      else 
- 	{
- 	  turnOn.setConstant(kTRUE);
- 	  width.setConstant(kTRUE);
- 	  decay.setConstant(kTRUE);
- 	}
-      RooRealVar *fLS =new RooRealVar("R_{SS/OS}","Empiric LS/SS ratio",0.,1.);
-      RooAbsPdf  *ChebPdf  = new RooChebychev("ChebPdf","ChebPdf",
-					 *mass, RooArgList(*bkg_a1,*bkg_a2));
-      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("bkgPdf","total combined background pdf",
-						      RooArgList(*ErrPdf,*ChebPdf),
-						      RooArgList(*fLS));
-      break;
-    case 2 : //us eRooKeysPdf to smooth the SS, then fit OS with pol+keys
-      bkg_a3->setConstant(true);
-      RooRealVar *fLS =new RooRealVar("R_{SS/OS}","Empiric LS/SS ratio",0.,1.);
-      RooKeysPdf *KeysPdf        = new RooKeysPdf("KeysPdf","KeysPdf",*mass,*likesignData,
- 						  RooKeysPdf::MirrorBoth, 1.4);
-      RooAbsPdf  *ChebPdf  = new RooChebychev("ChebPdf","ChebPdf",
-					      *mass, RooArgList(*bkg_a1,*bkg_a2));
-      if (doTrkRot) thisPdf     = new RooKeysPdf("thisPdf","thisPdf",*mass,*TrkRotData,
- 						  RooKeysPdf::MirrorBoth, 1.4);
-      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("bkgPdf","total combined background pdf",
- 						      RooArgList(*KeysPdf,*ChebPdf),
- 						      RooArgList(*fLS));
-      break;
-    case 3 : //use error function to fit the OS directly
-      bkg_a3->setConstant(true);
-      RooAbsPdf *pdf_combinedbkgd            = new  RooGenericPdf("bkgPdf","bkgPdf",
- 							     "exp(-@0/decay)*(TMath::Erf((@0-turnOn)/width)+1)",
- 							     RooArgList(*mass,turnOn,width,decay));
-      // RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf("pdf_combinedbkgd","total combined background pdf",
-      // 						     RooArgList(*thisPdf),
-      // 						     RooArgList(*nbkgd));
-      break;
+    if (doConstrainFit) 
+      { // allow parameters to vary within cenral value from above fit + their sigma
+	turnOn_constr = new RooGaussian("turnOn_constr","turnOn_constr",
+					turnOn,
+					RooConst(turnOn.getVal()),
+					RooConst(turnOn.getError()));
+	width_constr   = new RooGaussian("width_constr","width_constr",
+					 width,					   RooConst(width.getVal()),
+					 RooConst(width.getError()));
+	decay_constr    = new RooGaussian("decay_constr","decay_constr",
+					  decay,
+					  RooConst(decay.getVal()),
+					  RooConst(decay.getError()));
+      }
+    else 
+      {
+	turnOn.setConstant(kTRUE);
+	width.setConstant(kTRUE);
+	decay.setConstant(kTRUE);
+      }
+    RooRealVar *fLS =new RooRealVar("R_{SS/OS}","Empiric LS/SS ratio",0.,1.);
+    RooAbsPdf  *ChebPdf  = new RooChebychev("ChebPdf","ChebPdf",
+					    *mass, RooArgList(*bkg_a1,*bkg_a2));
+    RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("bkgPdf","total combined background pdf",
+						    RooArgList(*ErrPdf,*ChebPdf),
+						    RooArgList(*fLS));
+    break;
+  case 2 : //us eRooKeysPdf to smooth the SS, then fit OS with pol+keys
+    bkg_a3->setConstant(true);
+    RooRealVar *fLS =new RooRealVar("R_{SS/OS}","Empiric LS/SS ratio",0.,1.);
+    RooKeysPdf *KeysPdf        = new RooKeysPdf("KeysPdf","KeysPdf",*mass,*likesignData,
+						RooKeysPdf::MirrorBoth, 1.4);
+    RooAbsPdf  *ChebPdf  = new RooChebychev("ChebPdf","ChebPdf",
+					    *mass, RooArgList(*bkg_a1,*bkg_a2));
+    if (doTrkRot) thisPdf     = new RooKeysPdf("thisPdf","thisPdf",*mass,*TrkRotData,
+					       RooKeysPdf::MirrorBoth, 1.4);
+    RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("bkgPdf","total combined background pdf",
+						    RooArgList(*KeysPdf,*ChebPdf),
+						    RooArgList(*fLS));
+    break;
+  case 3 : //use error function to fit the OS directly
+    bkg_a3->setConstant(true);
+    RooAbsPdf *pdf_combinedbkgd            = new  RooGenericPdf("bkgPdf","bkgPdf",
+								"exp(-@0/decay)*(TMath::Erf((@0-turnOn)/width)+1)",
+								RooArgList(*mass,turnOn,width,decay));
+    // RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf("pdf_combinedbkgd","total combined background pdf",
+    // 						     RooArgList(*thisPdf),
+    // 						     RooArgList(*nbkgd));
+    break;
       
-    case 4 : //use pol 2 to fit the OS directly
-      bkg_a3->setConstant(true);
-      RooAbsPdf  *pdf_combinedbkgd  = new RooChebychev("bkgPdf","bkgPdf",
-					*mass, RooArgList(*bkg_a1,*bkg_a2));
-      break;
-    case 5 : //use ( error function + polynomial 2) to fit the OS directly
-      bkg_a3->setConstant(true);
-      RooRealVar *fPol   = new RooRealVar("F_{pol}","fraction of polynomial distribution",0.,1);
-      RooAbsPdf  *ChebPdf  = new RooChebychev("ChebPdf","ChebPdf",
-					      *mass, RooArgList(*bkg_a1,*bkg_a2,*bkg_a3));
-      RooGenericPdf *ErrPdf     = new  RooGenericPdf("ErrPdf","ErrPdf",
- 						      "exp(-@0/decay)*(TMath::Erf((@0-turnOn)/width)+1)",
- 						      RooArgList(*mass,turnOn,width,decay));
-      RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("bkgPdf","total combined background pdf",
- 						      RooArgList(*ChebPdf,*ErrPdf),
- 						      RooArgList(*fPol));
-      break;
-    case 6: // pol 3 to fit OS dirrectly 
-	RooAbsPdf  *pdf_combinedbkgd  = new RooChebychev("bkgPdf","bkgPdf",
- 					 *mass, RooArgList(*bkg_a1,*bkg_a2,*bkg_a3));
-      break;
-    default :
-      cout<<"Donno what you are talking about! Pick another fit option!"<<endl;
-      break;
-    }
+  case 4 : //use pol 2 to fit the OS directly
+    bkg_a3->setConstant(true);
+    RooAbsPdf  *pdf_combinedbkgd  = new RooChebychev("bkgPdf","bkgPdf",
+						     *mass, RooArgList(*bkg_a1,*bkg_a2));
+    break;
+  case 5 : //use ( error function + polynomial 2) to fit the OS directly
+    bkg_a3->setConstant(true);
+    RooRealVar *fPol   = new RooRealVar("F_{pol}","fraction of polynomial distribution",0.,1);
+    RooAbsPdf  *ChebPdf  = new RooChebychev("ChebPdf","ChebPdf",
+					    *mass, RooArgList(*bkg_a1,*bkg_a2,*bkg_a3));
+    RooGenericPdf *ErrPdf     = new  RooGenericPdf("ErrPdf","ErrPdf",
+						   "exp(-@0/decay)*(TMath::Erf((@0-turnOn)/width)+1)",
+						   RooArgList(*mass,turnOn,width,decay));
+    RooAbsPdf  *pdf_combinedbkgd   = new RooAddPdf ("bkgPdf","total combined background pdf",
+						    RooArgList(*ChebPdf,*ErrPdf),
+						    RooArgList(*fPol));
+    break;
+  case 6: // pol 3 to fit OS dirrectly 
+    RooAbsPdf  *pdf_combinedbkgd  = new RooChebychev("bkgPdf","bkgPdf",
+						     *mass, RooArgList(*bkg_a1,*bkg_a2,*bkg_a3));
+    break;
+  default :
+    cout<<"Donno what you are talking about! Pick another fit option!"<<endl;
+    break;
+  }
   
   //###### the nominal fit with default pdf 
   RooFitResult* fit_2nd;// fit results
@@ -574,7 +576,7 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
 RooAbsPdf  *pdf             = new RooAddPdf ("pdf","total p.d.f.",
 						   RooArgList(*sig1S,*sig2S,*sig3S,*pdf_combinedbkgd),
  						   RooArgList(*nsig1f,*nsig2f,*nsig3f,*nbkgd));
-      fit_2nd       = pdf->fitTo(*data,Save(kTRUE),Minos(doMinos));
+ fit_2nd       = pdf->fitTo(*data,Save(kTRUE),Extended(kTRUE),Minos(doMinos));
     }
 
   // *************************************************** plotting
@@ -799,15 +801,14 @@ RooAbsPdf  *pdf             = new RooAddPdf ("pdf","total p.d.f.",
    
   }
 
-
  // << "FreeParam= "<< nFitParam <<" "<<baseNll<< " " <<estimatedDistance2Minimum<< " " << 2*nFitParam+2*baseNll<< " " << UnNormChi2 << " " << Dof<<" "<< TMath::Prob(UnNormChi2,Dof) << " " << endl;
  //  outfileFitResults <<endl;
 
  //  outfileFitResults<< "alpha= "<<alpha->printValue(outfileFitResults)  << "\t npow= "<<npow->printValue(outfileFitResults)<< "\t sigma1= "<<sigma1->printValue(outfileFitResults) << "\t turnOn= "<<turnOn.printValue(outfileFitResults) <<endl;
 
  //  outfileFitResults << "rooFitChSquare= "<< chi2FromRoo*Dof <<endl;
-  outfileFitResults.close();
-  // ConfidencInterval(0.683, f3Svs1S, data, pdf);
+outfileFitResults.close();
+// ConfidencInterval(0.683, f3Svs1S, data, pdf);
  
 }
 
