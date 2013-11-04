@@ -104,7 +104,7 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
 			      )
 {
   // gROOT->Macro("/Users/eusmartass/Software/utilities/setStyle.C+");
-  gROOT->Macro("cm/logon.C+");
+  gROOT->Macro("~/logon.C");
 
   if (dimuPtMax<=3.5) mass_l = 8.0;
   // input file
@@ -141,7 +141,7 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
       finput   = "../dimuonTree_HI2011_fulldataset_trkRot.root";
       break;
     case 7://pp @ 2.76TeV
-      finput   = "../dimuonTree_upsiMiniTree_pp276tev_5p41_Run211739-211831_trigBit1_allTriggers0_pt4.root";
+      finput   = "dimuonTree_upsiMiniTree_pp276tev_5p41_Run211739-211831_trigBit1_allTriggers0_pt4.root";
       break;
     default:
       cout<<"You don't know what you are doing! Pick one of the available datasets in the choseSampleCases[] array"<<endl;
@@ -389,8 +389,8 @@ void fitUpsilonYields_variant(int choseSample    = 3, //Input data sample.  1: p
   switch (choseFitParams)
     {
     case 0://use the YIELDs of 2S and 3S as free parameters
-      RooRealVar *nsig2f  = new RooRealVar("N2S","nsig2S",   nt*0.25,-1*nt,10*nt);
-      RooRealVar *nsig3f  = new RooRealVar("N3S","nsig3S",   nt*0.25,-1*nt,10*nt);
+      RooRealVar *nsig2f  = new RooRealVar("N_{2S}","nsig2S",   nt*0.25,-1*nt,10*nt);
+      RooRealVar *nsig3f  = new RooRealVar("N_{3S}","nsig3S",   nt*0.25,-1*nt,10*nt);
       break;
     case 1:  //use the RATIOs of 2S and 3S as free parameters
       RooRealVar *f2Svs1S   = new RooRealVar("R_{#frac{2S}{1S}}","f2Svs1S",0.26,-0.1,1.0);

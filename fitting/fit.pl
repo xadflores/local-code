@@ -1,16 +1,16 @@
-#!/opt/star/bin/perl -w
+#!/usr/bin/perl
 #
 use strict;
 #naming the directories: 
-my $workDir      = "/Users/nicolas/Project/ups2013/code/";
+my $workDir      = "/home/cflores/documents/analysis/pp_data/plots/plots_Y115";
 # after $workdir, the structure is
 # pdfOutput                        |txtOutput
 # date (I use /MMDD)
 # vP_0p01       |    vP_0p05       |vP_0p01     |   vP_0p05
 #pt_3 | pt_3p5 | pt_4 | pt_4p5 (in each vP subdirectory)
 
-my $pdfPrefix = "pdfOutput/2009/";
-my $txtPrefix = "txtOutput/2009/";
+my $pdfPrefix = "/pdfout/";
+my $txtPrefix = "/txtout/";
 my $outFigDirStep = $workDir.$pdfPrefix;
 my $outDatDirStep = $workDir.$txtPrefix;
 my $outFigDir;
@@ -23,8 +23,8 @@ print "Welcome to SuperFitter! ";
 
 #------------------------ OUTPUT DIRECTORIES per samples
 my @sampleIndex  = ("","1","2","3","4","5","6","7"); #Input data sample. 1: pp@7TeV-d0 data ; 2: pp@7TeV-d3 data; 3: PbPb@276 regit 4: pp reco TT 5: pp reco GG 6: zhen tree, GG 7: pp@2.76TeV data
-my $samstart = 3;
-my $samend   = 3;
+my $samstart = 7;
+my $samend   = 7;
 my @choseSamples = ("","pp7tev-d0", "pp7tev-d3","pbpbRegit_cm","pbpbPPrecoTT", "pbpbPPrecoGG","pbpbZhen2011","pp2p76tev");
 # ------------------------------------------------------
 my $doNarrowMass = 1; 
@@ -68,8 +68,8 @@ my $centend   =0 ;
  my @centrality_max = ("40","2","4","8","12","16","20","28","4","8","40","8","28","40");
 # 0-5 | 5-10 | 10-20 | 20-30 | 30-40 | 40-50(60) | 50(60)-100 | 0-20 | 20-90(alice comparisons)
 
-my $modelstart =1;
-my $modelend   =6;
+my $modelstart =3;
+my $modelend   =3;
 #Background Model.  1: LS erf*exp + pol2; 2: LS RookeyPdf + pol2; 3: erf*exp; 4: pol2; 5: erf*exp+pol2 6: poly 3
 my @bkgModel        = ("","1","2","3","4","5","6");
 
@@ -83,25 +83,33 @@ my $muonEtaMin     = -2.4;
 my $muonEtaMax     = 2.4; 
 my $dimuYMin       = -2.4; 
 my $dimuYMax       = 2.4; #used when not binning in y_ups
-my $upsPtCutMin    = 0;
-my $upsPtCutMax    = 150; #used when not binning in pT
+my $upsPtCutMin    = 0.;
+my $upsPtCutMax    = 15.; #used when not binning in pT
 my $isam;
 
-# my @rapBinMin = ("-2.4","-1.6","-0.8","0","0.8","1.6");
-# my @rapBinMax = ("-1.6","-0.8","0","0.8","1.6","2.4");
+#my @rapBinMin = ("-2.4","-1.6","-0.8","0","0.8","1.6");
+#my @rapBinMax = ("-1.6","-0.8","0","0.8","1.6","2.4");
 
 # ----------------0----1-------2------3----4-----5-----6-----7--# rapidity binning suited for PbPb 1S (0->4), 2S (5->7);
-my @rapBinMin = ("0.","0.4" ,"0.7","1.0","1.5","0." ,"1.2","0.");
-my @rapBinMax = ("0.4","0.7","1.0","1.5","2.4","1.2","2.4","2.4");
+#my @rapBinMin = ("0.",);
+#my @rapBinMax = ("0.5");
 
 
 # pT binning for 2S:
 #my @upsPtBinMin = ("0","6.5","10","0");	 
 #my @upsPtBinMax = ("6.5","10","20","20");
 # ------------------0-----1-----2---3----4----5-----6-----7------8---9## pT binning for 1S (0->5), 2S (6->9);
-my @upsPtBinMin = ("0"  ,"2.5","5","8" ,"12","20" ,"0"  ,"6.5","10","0");	 
-my @upsPtBinMax = ("2.5","5" , "8","12","20","150","6.5","10","20","20");
-my $dontDoRapNow =0;
+my @upsPtBinMin = ("0.","1.","2","3.","4.","5.","6.","7.","8.","9.");	 
+my @upsPtBinMax = ("1.","2.","3.","4.","5.","6.","7.","8.","9.","10.");
+
+#chad's special bins
+#my @upsPtBinMin = ("0.0");
+#my @upsPtBinMax = ("1.0");
+
+my @rapBinMin = ("-0.5","-0.7","-1.0");
+my @rapBinMax = ("0.5","0.7","1.0");
+
+my $dontDoRapNow =1;
 my $dontDoPtNow =0;
 #loops for mkdir purposes
 for (my $ivProb=$vProbStart; $ivProb<=$vProbEnd; $ivProb++)
@@ -175,7 +183,7 @@ for( my $icent=$centstart; $icent <=$centend; $icent++)
 				my $choseSample = $sampleIndex[$isam];
 				my $sample = $choseSamples[$choseSample];
 				$upsPtCutMin=0;
-				$upsPtCutMax=150;
+				$upsPtCutMax=15.;
 				$dimuYMin = -2.4;
 				$dimuYMax = 2.4;
 				
@@ -228,11 +236,11 @@ for ( $isam=$samstart; $isam<=$samend; $isam++)
 			#  next if($iref==1);# do not fix to MC 
 			next if(($iref==1 || $iref==2) && ($isig==0 && $ifsr==0));
 			
-			for(my $iRap=0; $iRap<=7; $iRap++){ #hardcoded... so what?
+			for(my $iRap=0; $iRap<=2; $iRap++){ #hardcoded... so what?
 			    $dimuYMin=$rapBinMin[$iRap];
 			    $dimuYMax=$rapBinMax[$iRap];
 			    $upsPtCutMin    = 0;
-			    $upsPtCutMax    = 150; #used when not binning in pT
+			    $upsPtCutMax    = 15.; #used when not binning in pT
 			    next if($dontDoRapNow==1);
 			    for ( my $ibkg=$modelstart; $ibkg<=$modelend; $ibkg++)
 			    {
@@ -267,7 +275,7 @@ for ( $isam=$samstart; $isam<=$samend; $isam++)
 			    $upsPtCutMin=$upsPtBinMin[$iUpsPt];
 			    $upsPtCutMax=$upsPtBinMax[$iUpsPt];
 			    $dimuYMin       = -2.4; 
-			    $dimuYMax       = 2.4; #used when not binning in y_ups
+			    $dimuYMax       =2.4; #used when not binning in y_ups
 			    next if($dontDoPtNow==1);
 			    for ( my $ibkg=$modelstart; $ibkg<=$modelend; $ibkg++)
 			    {
@@ -294,7 +302,7 @@ for ( $isam=$samstart; $isam<=$samend; $isam++)
 				print   "single Muon pT > $muonPtCut\n";
 				print "$upsPtCutMin > pT_Ups > $upsPtCutMax";
 				print "$dimuYMin > y_Ups > $dimuYMax";
-				system("root -l -b -q	'fitUpsilonYields_variant.C($choseSample,$choseFitParams,$bkgType,$myfsr,$mysigma1,$centMin,$centMax,$muonEtaMin,$muonEtaMax,$upsPtCutMin,$upsPtCutMax,$muonPtCut,$plotBkg,$doTrkRot,$doConstrainFit,$myref,$paramsOnFigure,\"$sample\",\"$outFigDir\",\"$outDatDir\",\"$prefix\",$doNarrowMass,$vProb)'
+				system("root -l -b -q	'fitUpsilonYields_variantChadAbsY.C($choseSample,$choseFitParams,$bkgType,$myfsr,$mysigma1,$centMin,$centMax,$muonEtaMin,$muonEtaMax,$upsPtCutMin,$upsPtCutMax,$muonPtCut,$plotBkg,$doTrkRot,$doConstrainFit,$myref,$paramsOnFigure,\"$sample\",\"$outFigDir\",\"$outDatDir\",\"$prefix\",$doNarrowMass,$vProb)'
 			"); 
 			    } #bkg 
 			} # pT bins

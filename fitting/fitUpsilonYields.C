@@ -84,8 +84,8 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
 		      int centralityMax = 40,
 		      float muonEtaMin  = -1.,
 		      float muonEtaMax  = 1, 
-		      float dimuYMin    = -1., 
-		      float dimuYMax    = 1.,
+		      float dimuYMin    = -.5, 
+		      float dimuYMax    = .5,
 		      double muonpTcut  = 4, //single muon pT cut
 		      bool plotBkg      = 0, //0: hide LS or trkRot; 1: plot LS or trkRot data points and fit lines;
 		      bool doTrkRot     = 0, //0: use LS;   1: use track rotation
@@ -101,7 +101,7 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
 			 )
 {
   // gROOT->Macro("/Users/eusmartass/Software/utilities/setStyle.C+");
-  gROOT->Macro("cm/logon.C+");
+  gROOT->Macro("~/logon.C");
 
   if (centralityMin==28) binw=0.2;
   // input file
@@ -151,7 +151,7 @@ void fitUpsilonYields(int choseSample    = 3, //Input data sample.  1: pp@7TeV d
       finput   = "../dimuonTree_HI2011_fulldataset_trkRot.root";
       break;
     case 7://pp @ 2.76TeV
-      finput   = "../dimuonTree_upsiMiniTree_pp276tev_5p41_Run211739-211831_trigBit1_allTriggers0_pt4.root";
+      finput   = "dimuonTree_upsiMiniTree_pp276tev_5p41_Run211739-211831_trigBit1_allTriggers0_pt4.root";
       break;
     default:
       cout<<"You don't know what you are doing! Pick one of the available datasets in the choseSampleCases[] array"<<endl;
